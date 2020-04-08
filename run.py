@@ -4,7 +4,7 @@ import sys
 
 
 def save(pokemon):
-    with open("pokemon.csv", "w") as f:
+    with open("data/pokemon.csv", "w") as f:
         header = [
             "no",
             "name",

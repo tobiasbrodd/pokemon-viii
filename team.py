@@ -5,7 +5,7 @@ import sys
 
 
 def load():
-    pokemon = pd.read_csv("pokemon.csv", sep=",")
+    pokemon = pd.read_csv("data/pokemon.csv", sep=",")
 
     return pokemon
 
