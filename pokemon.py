@@ -47,6 +47,16 @@ class Pokemon:
 
         return ",".join(strings)
 
+    def get_total_stat(self):
+        return (
+            self.hp
+            + self.attack
+            + self.defense
+            + self.sp_attack
+            + self.sp_defense
+            + self.speed
+        )
+
 
 class Type(Enum):
     NORMAL = "normal"
