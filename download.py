@@ -49,7 +49,7 @@ def main(argv):
     long_options = [
         "help",
     ]
-    help_message = """usage: run.py [options]
+    help_message = """usage: download.py [options]
     options:
         -h, --help          Prints help message."""
 
@@ -77,6 +77,7 @@ def main(argv):
         print([p.name for p in pokemon])
 
     save(pokemon)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
