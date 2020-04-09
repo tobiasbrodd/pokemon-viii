@@ -24,6 +24,7 @@ def load():
 def filter_pokemon(
     pokemon,
     stats,
+    types=None,
     stage=None,
     only_final=False,
     allow_legendary=True,
@@ -36,6 +37,10 @@ def filter_pokemon(
     pokemon = pokemon[pokemon["sp_defense"] > stats[Stats.SP_DEFENSE]]
     pokemon = pokemon[pokemon["speed"] > stats[Stats.SPEED]]
 
+    if types is not None:
+        for t in types:
+            fltr = np.logical_or(pokemon.type_1 == t.value, pokemon.type_2 == t.value)
+            pokemon = pokemon[fltr]
     if stage is not None:
         pokemon = pokemon[pokemon["stage"] == stage]
     if only_final:
@@ -213,6 +218,7 @@ def main(argv):
         "spdefense=",
         "speed=",
         "weights=",
+        "types=",
         "stage=",
         "final",
         "legendary",
@@ -230,11 +236,12 @@ def main(argv):
         --spdefense s       Sets minimum sp. defense to 's'. Default: '0'.
         --speed s           Sets minimum speed to 's'. Default: '0'.
         --weights w         Sets weights to 'w'. Default: '1,1,1,1,1,1'.
+        --types t           Sets types to 't. Default: 'All'.
         --stage s           Sets stage to 'ws'. Default: 'None'.
-        --final             Only allows final evolutions.
+        --final             Only allow final evolutions.
         --legendary         Don't allow legendary Pokemon.
         --mytical           Don't allow mythical Pokemon.
-        --random            Randomizes team generation."""
+        --random            Randomize team generation."""
 
     try:
         opts, args = getopt(argv, shortopts=short_options, longopts=long_options)
@@ -250,6 +257,7 @@ def main(argv):
     min_sp_defense = 0
     min_speed = 0
     weights = np.ones((1, 6))
+    types = None
     stage = None
     only_final = False
     allow_legendary = True
@@ -276,6 +284,8 @@ def main(argv):
             min_speed = float(arg)
         elif opt == "--weights":
             weights = np.asmatrix([float(w) for w in arg.split(",")])
+        elif opt == "--types":
+            types = [Type[t.strip().upper()] for t in arg.split(",")]
         elif opt == "--stage":
             stage = int(arg)
         elif opt == "--final":
@@ -290,7 +300,7 @@ def main(argv):
     if weights.shape[1] != 6:
         print(help_message)
         return
-    elif stage < 1 or stage > 3:
+    elif stage is not None and (stage < 1 or stage > 3):
         print(help_message)
         return
 
@@ -307,6 +317,7 @@ def main(argv):
     pokemon = filter_pokemon(
         pokemon,
         min_stats,
+        types=types,
         stage=stage,
         only_final=only_final,
         allow_legendary=allow_legendary,
