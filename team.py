@@ -55,10 +55,22 @@ def filter_pokemon(
 
 def get_types(pokemon):
     lookup = {}
-    types = list(zip(pokemon.type_1, pokemon.type_2))
+    types = list(zip(pokemon["type_1"], pokemon["type_2"]))
     types = list(set(types))
 
     return types
+
+
+def get_team_types(pokemon, team_no):
+    team_types = []
+    for no in team_no:
+        pkmn = pokemon[pokemon["no"] == no]
+        if pkmn.empty:
+            continue
+        pkmn = pkmn.head(1)
+        team_types.append(*zip(pkmn["type_1"], pkmn["type_2"]))
+
+    return team_types
 
 
 def generate_weakness_chart(pokemon):
@@ -75,27 +87,43 @@ def generate_weakness_chart(pokemon):
 
     all_types = pokemon.columns[14:]
     weaknesses = np.asmatrix(weaknesses)
-    weaknesses = pd.DataFrame(weaknesses, index=types, columns=all_types)
+    multi_index = pd.MultiIndex.from_tuples(types)
+    weaknesses = pd.DataFrame(weaknesses, index=multi_index, columns=all_types)
 
     return weaknesses, types
 
 
-def generate_team_types(weaknesses, types, size=6):
+def generate_team_types(weaknesses, types, size=6, team=[], unique=False):
     team_types = []
     weaknesses -= 1
+    weaknesses *= 2
     chart = weaknesses
+    split = len(team)
 
-    for i in range(size):
+    for i in range(split):
+        t = team[i]
+        chart = update_chart(weaknesses, chart, t)
+
+    for i in range(split, size):
         perf = np.sum(chart, axis=1)
         best = np.argmin(perf)
         t = types[best]
-        team_types.append(t)
-        chart = update_chart(weaknesses, chart, t, best)
+        chart = update_chart(weaknesses, chart, t)
+        while t in team_types and unique:
+            if chart.shape[0] >= len(team_types):
+                t = None
+                break
+            perf = np.sum(chart, axis=1)
+            best = np.argmin(perf)
+            t = types[best]
+            chart = update_chart(weaknesses, chart, t)
+        if t is not None:
+            team_types.append(t)
 
     return team_types
 
 
-def update_chart(weaknesses, chart, t, best):
+def update_chart(weaknesses, chart, t):
     type_1 = t[0]
     type_2 = t[1]
 
@@ -103,14 +131,14 @@ def update_chart(weaknesses, chart, t, best):
 
     update = chart * 0
 
-    type_weaknesses = weaknesses.iloc[best, :]
+    type_weaknesses = weaknesses.loc[t, :]
     min_weakness = np.amin(type_weaknesses)
     weak_types = type_weaknesses[type_weaknesses == min_weakness]
     fltr = np.logical_and(weak_types.index != type_1, weak_types.index != type_2)
     update_types = weak_types.loc[fltr]
-    update.iloc[best, :][update_types.index] += 2
+    update.loc[t, :][update_types.index] += 1
 
-    type_weaknesses = weaknesses.iloc[best, :]
+    type_weaknesses = weaknesses.loc[t, :]
     max_weaknesses = np.amax(type_weaknesses)
     strong_types = type_weaknesses[type_weaknesses == max_weaknesses].index
     effective = weaknesses[strong_types]
@@ -137,33 +165,61 @@ def update_chart(weaknesses, chart, t, best):
     return chart
 
 
-def get_team(pokemon, team_types, weights=None):
+def get_team(pokemon, team_types, weights=None, team_no=[], unique=False):
     team = []
+
+    for no in team_no:
+        pkmn = pokemon[pokemon["no"] == no].squeeze()
+        if pkmn.empty:
+            continue
+        team.append(frame_to_pokemon(pkmn))
 
     if weights is None:
         stats = pokemon.columns[8:14]
         weights = pd.DataFrame(np.ones((1, 6)), columns=stats)
 
     for t in team_types:
-        type_1 = t[0]
-        type_2 = t[1]
-        fltr = np.logical_and(pokemon.type_1 == type_1, pokemon.type_2 == type_2)
-        pkmns = pokemon.loc[fltr]
-        stats = pkmns.iloc[:, 8:14]
-        weighted_stats = stats.multiply(weights.to_numpy())
-        index = weighted_stats.sum(axis=1).idxmax(axis=0)
-        pkmn = pkmns.loc[index]
-        team.append(frame_to_pokemon(pkmn))
+        pkmn = get_pokemon(pokemon, team, weights, t, unique=unique)
+        if pkmn is not None:
+            team.append(frame_to_pokemon(pkmn))
 
     return team
 
 
-def get_random_team(pokemon, size=6):
-    n = pokemon.shape[0]
-    rdx = np.random.randint(0, n, size)
-    pkmns = pokemon.iloc[rdx, :]
+def get_pokemon(pokemon, team, weights, t, unique=False):
+    type_1 = t[0]
+    type_2 = t[1]
+    fltr = np.logical_and(pokemon["type_1"] == type_1, pokemon["type_2"] == type_2)
+    pkmns = pokemon.loc[fltr]
+    if unique:
+        team_names = [p.name for p in team]
+        pkmns = pkmns[~pkmns.loc[:, "name"].isin(team_names)]
+    if pkmns.empty:
+        return None
+    stats = pkmns.iloc[:, 8:14]
+    weighted_stats = stats.multiply(weights.to_numpy())
+    index = weighted_stats.sum(axis=1).idxmax(axis=0)
+    pkmn = pkmns.loc[index]
 
+    return pkmn
+
+
+def get_random_team(pokemon, size=6, team_no=[], unique=False):
     team = []
+
+    for no in team_no:
+        pkmn = pokemon[pokemon["no"] == no].squeeze()
+        if pkmn.empty:
+            continue
+        team.append(frame_to_pokemon(pkmn))
+
+    n = pokemon.shape[0]
+    rdx = []
+    if unique:
+        rdx = np.random.choice(n, size - len(team))
+    else:
+        rdx = np.random.randint(0, n, size - len(team))
+    pkmns = pokemon.iloc[rdx, :]
     rows = pkmns.shape[0]
     for row in range(rows):
         team.append(frame_to_pokemon(pkmns.iloc[row, :]))
@@ -172,6 +228,9 @@ def get_random_team(pokemon, size=6):
 
 
 def frame_to_pokemon(frame):
+    if frame is None:
+        return None
+
     no = frame["no"]
     name = frame["name"]
     type_1 = frame["type_1"]
@@ -211,6 +270,7 @@ def main(argv):
     long_options = [
         "help",
         "size=",
+        "team=",
         "hp=",
         "attack=",
         "defense=",
@@ -224,11 +284,14 @@ def main(argv):
         "legendary",
         "mythical",
         "random",
+        "utypes",
+        "uteam",
     ]
     help_message = """usage: run.py [options]
     options:
         -h, --help          Prints help message.
         --size s            Sets size of the team to 's'. Default: '6'.
+        --team t            Sets team to 't'. Default: 'Empty'.
         --hp h              Sets minimum HP to 'h'. Default: '0'.
         --attack a          Sets minimum attack to 'a'. Default: '0'.
         --defense d         Sets minimum defense to 'd'. Default: '0'.
@@ -241,7 +304,9 @@ def main(argv):
         --final             Only allow final evolutions.
         --legendary         Don't allow legendary Pokemon.
         --mytical           Don't allow mythical Pokemon.
-        --random            Randomize team generation."""
+        --random            Randomize team generation.
+        --utypes            Enables unique type generation (if not random).
+        --uteam             Enables unique team generation."""
 
     try:
         opts, args = getopt(argv, shortopts=short_options, longopts=long_options)
@@ -250,6 +315,7 @@ def main(argv):
         return
 
     size = 6
+    team_no = []
     min_hp = 0
     min_attack = 0
     min_defense = 0
@@ -263,6 +329,8 @@ def main(argv):
     allow_legendary = True
     allow_mythical = True
     randomize = False
+    utypes = False
+    uteam = False
 
     for opt, arg in opts:
         if opt in ["-h", "--help"]:
@@ -270,6 +338,8 @@ def main(argv):
             return
         elif opt == "--size":
             size = int(arg)
+        elif opt == "--team":
+            team_no = [int(no) for no in arg.split(",")]
         elif opt == "--hp":
             min_hp = float(arg)
         elif opt == "--attack":
@@ -296,11 +366,18 @@ def main(argv):
             allow_mythical = False
         elif opt == "--random":
             randomize = True
+        elif opt == "--utypes":
+            utypes = True
+        elif opt == "--uteam":
+            uteam = True
 
     if weights.shape[1] != 6:
         print(help_message)
         return
     elif stage is not None and (stage < 1 or stage > 3):
+        print(help_message)
+        return
+    elif len(team_no) >= size:
         print(help_message)
         return
 
@@ -326,18 +403,24 @@ def main(argv):
 
     team = []
     if randomize:
-        team = get_random_team(pokemon, size=size)
+        team = get_random_team(pokemon, size=size, team_no=team_no, unique=uteam)
     else:
         weaknesses, types = generate_weakness_chart(pokemon)
-        team_types = generate_team_types(weaknesses, types, size=size)
+        team_types = get_team_types(pokemon, team_no)
+        team_types = generate_team_types(
+            weaknesses, types, size=size, team=team_types, unique=utypes
+        )
 
         stats = pokemon.columns[8:14]
         weights = pd.DataFrame(weights, columns=stats)
-        team = get_team(pokemon, team_types, weights=weights)
+        team = get_team(
+            pokemon, team_types, weights=weights, team_no=team_no, unique=uteam
+        )
 
     stats = np.zeros((len(team),))
     for (i, p) in enumerate(team):
         stats[i] = p.get_total_stat()
+
     print(f"Team: {[p.name for p in team]}")
     print(f"Mean Total: {stats.mean():.2f}")
 
