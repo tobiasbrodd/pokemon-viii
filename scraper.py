@@ -1,5 +1,6 @@
 from pokemon import Pokemon, Stats, Type
 from multiprocessing import Manager, Process, Pool, cpu_count
+from urllib import request as req
 from functools import partial
 from bs4 import BeautifulSoup
 import requests
@@ -7,7 +8,7 @@ import time
 import re
 
 
-class Scraper:
+class PokemonScraper:
     def __init__(self):
         self.base_url = "https://www.serebii.net"
         self.dex_url = self.base_url + "/swordshield/galarpokedex.shtml"
@@ -182,3 +183,35 @@ class Scraper:
         empty_len = len(print_str)
         print(f"\r{empty_str}", end="")
         print(f"\rProgress: {jobs:.0f}/{jobs:.0f}")
+
+
+class ImageScraper:
+    def __init__(self):
+        self.base_url = "https://www.serebii.net"
+        self.image_url = self.base_url + "/swordshield/pokemon"
+
+    def download_images(self, urls):
+        failed = {}
+        jobs = len(urls)
+        empty_len = 0
+
+        for (job, url) in enumerate(urls):
+            empty_str = " " * empty_len
+            print_str = f"Progress: {job:.0f}/{jobs:.0f} - {url}"
+            empty_len = len(print_str)
+            print(f"\r{empty_str}", end="")
+            print(f"\r{print_str}", end="")
+
+            url = str(url)
+            while len(url) < 3:
+                url = "0" + url
+            try:
+                req.urlretrieve(f"{self.image_url}/{url}.png", f"./images/{url}.png")
+            except Exception as error:
+                failed[url] = error
+
+        empty_len = len(print_str)
+        print(f"\r{empty_str}", end="")
+        print(f"\rProgress: {jobs:.0f}/{jobs:.0f}")
+
+        return failed
