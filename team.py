@@ -2,6 +2,7 @@ from pokemon import Pokemon, Type, Stats
 from getopt import getopt, GetoptError
 import pandas as pd
 import numpy as np
+import asciify
 import sys
 
 
@@ -290,6 +291,68 @@ def frame_to_pokemon(frame):
     return pokemon
 
 
+def print_team(team):
+    if len(team) <= 0:
+        return
+
+    team_images = get_team_images(team)
+
+    rows = len(team_images[0])
+    cols = len(team_images[0][0])
+    images = len(team_images)
+    output = []
+
+    output.append("_" * cols * images + "_" * (len(team) + 1))
+    team_output = ["|"]
+    for pokemon in team:
+        padding = cols - len(pokemon.name)
+        left_padding = padding // 2
+        right_padding = padding - left_padding
+        title = " " * left_padding + pokemon.name + " " * right_padding + "|"
+        team_output.append(title)
+    output.append("".join(team_output))
+
+    output.append("-" * cols * images + "-" * (len(team) + 1))
+    for row in range(rows):
+        row_output = []
+        for image in range(images):
+            if image == 0:
+                row_output.append("|")
+            row_output.extend(team_images[image][row])
+            row_output.append("|")
+        output.append("".join(row_output))
+    output.append("-" * cols * images + "-" * (len(team) + 1))
+
+    combined_team_image = "\n".join(output)
+    print(combined_team_image)
+
+
+def get_team_images(team):
+    team_images = []
+    for pokemon in team:
+        no = str(pokemon.no)
+        while len(no) < 3:
+            no = "0" + no
+
+        path = f"images/{no}.png"
+        image = asciify.get_image(path)
+        if image is None:
+            continue
+        ascii_image = asciify.convert(image, width=30)
+        team_images.append(ascii_image)
+
+    return team_images
+
+
+def print_team_statistics(team):
+    print("Statistics")
+    print("----------")
+    stats = np.zeros((len(team),))
+    for (i, p) in enumerate(team):
+        stats[i] = p.get_total_stat()
+    print(f"Mean Total: {stats.mean():.2f}")
+
+
 def main(argv):
     short_options = "h"
     long_options = [
@@ -453,12 +516,9 @@ def main(argv):
             pokemon, team_types, weights=weights, team_no=team_no, unique=uteam
         )
 
-    stats = np.zeros((len(team),))
-    for (i, p) in enumerate(team):
-        stats[i] = p.get_total_stat()
-
-    print(f"Team: {[p.name for p in team]}")
-    print(f"Mean Total: {stats.mean():.2f}")
+    print_team(team)
+    print("")
+    print_team_statistics(team)
 
 
 if __name__ == "__main__":
