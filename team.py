@@ -36,6 +36,15 @@ def filter_pokemon(
     pokemon = pokemon[pokemon["sp_attack"] > stats[Stats.SP_ATTACK]]
     pokemon = pokemon[pokemon["sp_defense"] > stats[Stats.SP_DEFENSE]]
     pokemon = pokemon[pokemon["speed"] > stats[Stats.SPEED]]
+    pokemon = pokemon[
+        pokemon["hp"]
+        + pokemon["attack"]
+        + pokemon["defense"]
+        + pokemon["sp_attack"]
+        + pokemon["sp_defense"]
+        + pokemon["speed"]
+        > stats[Stats.TOTAL]
+    ]
 
     if types is not None:
         for t in types:
@@ -80,7 +89,7 @@ def generate_weakness_chart(pokemon):
     for (i, t) in enumerate(types):
         type_1 = t[0]
         type_2 = t[1]
-        fltr = np.logical_and(pokemon.type_1 == type_1, pokemon.type_2 == type_2)
+        fltr = np.logical_and(pokemon["type_1"] == type_1, pokemon["type_2"] == type_2)
         pkmn = pokemon.loc[fltr].head(1).to_numpy()
         weaknesses.append(pkmn[:, 14:].reshape(-1,))
         indices[t] = i
@@ -93,7 +102,9 @@ def generate_weakness_chart(pokemon):
     return weaknesses, types
 
 
-def generate_team_types(weaknesses, types, size=6, team=[], unique=False):
+def generate_team_types(
+    pokemon, weaknesses, types, size=6, team=[], unique=False, unique_team=False
+):
     team_types = []
     weaknesses -= 1
     weaknesses *= 2
@@ -102,25 +113,38 @@ def generate_team_types(weaknesses, types, size=6, team=[], unique=False):
 
     for i in range(split):
         t = team[i]
+        team_types.append(t)
         chart = update_chart(weaknesses, chart, t)
 
     for i in range(split, size):
-        perf = np.sum(chart, axis=1)
-        best = np.argmin(perf)
-        t = types[best]
+        t = get_best_type(chart, types)
         chart = update_chart(weaknesses, chart, t)
-        while t in team_types and unique:
-            if chart.shape[0] >= len(team_types):
+        uteam_exists = unique_team_exists(pokemon, team_types, t)
+        while (t in team_types and unique) or (not uteam_exists and unique_team):
+            if chart.shape[0] <= len(team_types):
                 t = None
                 break
-            perf = np.sum(chart, axis=1)
-            best = np.argmin(perf)
-            t = types[best]
+            t = get_best_type(chart, types)
             chart = update_chart(weaknesses, chart, t)
+            uteam_exists = unique_team_exists(pokemon, team_types, t)
         if t is not None:
             team_types.append(t)
 
     return team_types
+
+
+def get_best_type(chart, types):
+    perf = np.sum(chart, axis=1)
+    best = np.argmin(perf)
+
+    return types[best]
+
+
+def unique_team_exists(pokemon, team_types, t):
+    n_team_type = len(list(filter(lambda tt: tt == t, team_types))) + 1
+    fltr = np.logical_and(pokemon["type_1"] == t[0], pokemon["type_2"] == t[1])
+    n_pokemon = pokemon.loc[fltr].shape[0]
+    return n_pokemon >= n_team_type
 
 
 def update_chart(weaknesses, chart, t):
@@ -167,6 +191,7 @@ def update_chart(weaknesses, chart, t):
 
 def get_team(pokemon, team_types, weights=None, team_no=[], unique=False):
     team = []
+    team_types = team_types[len(team_no) :]
 
     for no in team_no:
         pkmn = pokemon[pokemon["no"] == no].squeeze()
@@ -277,6 +302,7 @@ def main(argv):
         "spattack=",
         "spdefense=",
         "speed=",
+        "total=",
         "weights=",
         "types=",
         "stage=",
@@ -298,6 +324,7 @@ def main(argv):
         --spattack s        Sets minimum sp. attack to 's'. Default: '0'.
         --spdefense s       Sets minimum sp. defense to 's'. Default: '0'.
         --speed s           Sets minimum speed to 's'. Default: '0'.
+        --total t           Sets minimum total to 't'. Default: '0'.
         --weights w         Sets weights to 'w'. Default: '1,1,1,1,1,1'.
         --types t           Sets types to 't. Default: 'All'.
         --stage s           Sets stage to 'ws'. Default: 'None'.
@@ -322,6 +349,7 @@ def main(argv):
     min_sp_attack = 0
     min_sp_defense = 0
     min_speed = 0
+    min_total = 0
     weights = np.ones((1, 6))
     types = None
     stage = None
@@ -352,6 +380,8 @@ def main(argv):
             min_sp_defense = float(arg)
         elif opt == "--speed":
             min_speed = float(arg)
+        elif opt == "--total":
+            min_total = float(arg)
         elif opt == "--weights":
             weights = np.asmatrix([float(w) for w in arg.split(",")])
         elif opt == "--types":
@@ -388,6 +418,7 @@ def main(argv):
         Stats.SP_ATTACK: min_sp_attack,
         Stats.SP_DEFENSE: min_sp_defense,
         Stats.SPEED: min_speed,
+        Stats.TOTAL: min_total,
     }
 
     pokemon = load()
@@ -408,9 +439,14 @@ def main(argv):
         weaknesses, types = generate_weakness_chart(pokemon)
         team_types = get_team_types(pokemon, team_no)
         team_types = generate_team_types(
-            weaknesses, types, size=size, team=team_types, unique=utypes
+            pokemon,
+            weaknesses,
+            types,
+            size=size,
+            team=team_types,
+            unique=utypes,
+            unique_team=uteam,
         )
-
         stats = pokemon.columns[8:14]
         weights = pd.DataFrame(weights, columns=stats)
         team = get_team(
