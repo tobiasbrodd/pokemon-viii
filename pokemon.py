@@ -86,3 +86,4 @@ class Stats(Enum):
     SP_ATTACK = "sp_attack"
     SP_DEFENSE = "sp_defense"
     SPEED = "speed"
+    TOTAL = "total"
