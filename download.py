@@ -1,5 +1,5 @@
 from getopt import getopt, GetoptError
-from scraper import Scraper
+from scraper import PokemonScraper
 import sys
 
 
@@ -64,7 +64,7 @@ def main(argv):
             print(help_message)
             return
 
-    scraper = Scraper()
+    scraper = PokemonScraper()
     urls = scraper.get_urls()
     pokemon, failed = scraper.get_pokemon(urls)
 
