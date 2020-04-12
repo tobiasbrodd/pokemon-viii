@@ -1,7 +1,10 @@
 from PIL import Image
+from enum import Enum
 
 
-ASCII_CHARS = [" ", ".", ",", ":", ";", "+", "*", "?", "%", "$", "#", "@"]
+class Greyscale(Enum):
+    TEN = " .:-=+*#%@"
+    STANDARD = " .'`^\",:;Il!i><~+_-?][}{1)(|\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 
 
 def get_image(path):
@@ -26,7 +29,8 @@ def to_greyscale(image):
     return image.convert("L")
 
 
-def to_ascii(image):
+def to_ascii(image, greyscale=Greyscale.TEN):
+    ASCII_CHARS = greyscale.value
     pixels = list(image.getdata())
     buckets = (255 // len(ASCII_CHARS)) + 1
     ascii_pixels = [ASCII_CHARS[p // buckets] for p in pixels]
@@ -34,7 +38,7 @@ def to_ascii(image):
     return "".join(ascii_pixels)
 
 
-def convert(image, width=100):
+def convert(image, width=100, greyscale=Greyscale.TEN):
     image = resize(image, new_width=width)
     image = to_greyscale(image)
 
