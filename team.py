@@ -292,14 +292,13 @@ def frame_to_pokemon(frame):
     return pokemon
 
 
-def print_team(team):
+def print_team(team, color=False):
     if len(team) <= 0:
         return
 
-    team_images = get_team_images(team)
+    team_images, cols = get_team_images(team, color=color)
 
     rows = len(team_images[0])
-    cols = len(team_images[0][0])
     images = len(team_images)
     output = []
 
@@ -328,7 +327,7 @@ def print_team(team):
     print(combined_team_image)
 
 
-def get_team_images(team):
+def get_team_images(team, color=False):
     team_images = []
     for pokemon in team:
         no = str(pokemon.no)
@@ -341,10 +340,10 @@ def get_team_images(team):
             continue
 
         width = os.get_terminal_size().columns // len(team) - 2
-        ascii_image = asciify.convert(image, width=width)
+        ascii_image = asciify.convert(image, width=width, color=color)
         team_images.append(ascii_image)
 
-    return team_images
+    return team_images, width
 
 
 def print_team_statistics(team):
@@ -378,6 +377,7 @@ def main(argv):
         "random",
         "utypes",
         "uteam",
+        "color"
     ]
     help_message = """usage: run.py [options]
     options:
@@ -399,7 +399,8 @@ def main(argv):
         --mytical           Don't allow mythical Pokemon.
         --random            Randomize team generation.
         --utypes            Enables unique type generation (if not random).
-        --uteam             Enables unique team generation."""
+        --uteam             Enables unique team generation.
+        --color             Enables colored output."""
 
     try:
         opts, args = getopt(argv, shortopts=short_options, longopts=long_options)
@@ -425,6 +426,7 @@ def main(argv):
     randomize = False
     utypes = False
     uteam = False
+    color = False
 
     for opt, arg in opts:
         if opt in ["-h", "--help"]:
@@ -466,6 +468,8 @@ def main(argv):
             utypes = True
         elif opt == "--uteam":
             uteam = True
+        elif opt == "--color":
+            color = True
 
     if weights.shape[1] != 6:
         print(help_message)
@@ -473,7 +477,7 @@ def main(argv):
     elif stage is not None and (stage < 1 or stage > 3):
         print(help_message)
         return
-    elif len(team_no) >= size:
+    elif len(team_no) > size:
         print(help_message)
         return
 
@@ -519,7 +523,7 @@ def main(argv):
             pokemon, team_types, weights=weights, team_no=team_no, unique=uteam
         )
 
-    print_team(team)
+    print_team(team, color=color)
     print("")
     print_team_statistics(team)
 
