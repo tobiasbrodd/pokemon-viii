@@ -2,31 +2,12 @@
 
 A Pokemon Sword &amp; Shield Team Generator
 
-## Download
-
-Scrapes Galarian Pokedex Pokemon from Serebii.
-
-```shell
-> python3 download.py [options]
-```
-
-options:  
-**-h, --help:**         Prints help message.  
-
-## Images
-
-Scrapes Galarian Pokedex images from Serebii.
-
-```shell
-> python3 images.py [options]
-```
-
-options:  
-**-h, --help:**         Prints help message.  
-
 ## Team
 
-Generates a Pokemon team.
+Generates a Pokemon team and prints the team as ASCII images.
+
+![Team in greyscale](https://github.com/tobiasbrodd/pokemon-swsh/blob/master/examples/team_grey.png)
+![Team in color](https://github.com/tobiasbrodd/pokemon-swsh/blob/master/examples/team_color.png)
 
 ```shell
 > python3 team.py [options]
@@ -53,3 +34,25 @@ options:
 **--utypes:**           Enables unique type generation (if not random).
 **--uteam:**            Enables unique team generation.
 **--color:**            Enables colored output.
+
+## Download
+
+Scrapes Galarian Pokedex Pokemon from Serebii.
+
+```shell
+> python3 download.py [options]
+```
+
+options:  
+**-h, --help:**         Prints help message.  
+
+## Images
+
+Scrapes Galarian Pokedex images from Serebii.
+
+```shell
+> python3 images.py [options]
+```
+
+options:  
+**-h, --help:**         Prints help message.  
