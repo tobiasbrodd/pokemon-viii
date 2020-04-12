@@ -121,14 +121,16 @@ def generate_team_types(
     for i in range(split, size):
         t = get_best_type(chart, types)
         chart = update_chart(weaknesses, chart, t)
-        uteam_exists = unique_team_exists(pokemon, team_types, t)
+        uteam_exists = is_unique_team(pokemon, team_types, t)
         while (t in team_types and unique) or (not uteam_exists and unique_team):
-            if chart.shape[0] <= len(team_types):
+            if (chart.shape[0] <= len(team_types) and unique) or (
+                unique_team_exists(pokemon, team) and unique_team
+            ):
                 t = None
                 break
             t = get_best_type(chart, types)
             chart = update_chart(weaknesses, chart, t)
-            uteam_exists = unique_team_exists(pokemon, team_types, t)
+            uteam_exists = is_unique_team(pokemon, team_types, t)
         if t is not None:
             team_types.append(t)
 
@@ -142,11 +144,16 @@ def get_best_type(chart, types):
     return types[best]
 
 
-def unique_team_exists(pokemon, team_types, t):
+def is_unique_team(pokemon, team_types, t):
     n_team_type = len(list(filter(lambda tt: tt == t, team_types))) + 1
     fltr = np.logical_and(pokemon["type_1"] == t[0], pokemon["type_2"] == t[1])
     n_pokemon = pokemon.loc[fltr].shape[0]
     return n_pokemon >= n_team_type
+
+
+def unique_team_exists(pokemon, team):
+    n_pokemon = pokemon.shape[0]
+    return n_pokemon <= len(team)
 
 
 def update_chart(weaknesses, chart, t):
@@ -193,13 +200,15 @@ def update_chart(weaknesses, chart, t):
 
 def get_team(pokemon, team_types, weights=None, team_no=[], unique=False):
     team = []
-    team_types = team_types[len(team_no) :]
 
     for no in team_no:
         pkmn = pokemon[pokemon["no"] == no].squeeze()
         if pkmn.empty:
             continue
         team.append(frame_to_pokemon(pkmn))
+
+    if len(team_no) > 0:
+        team_types = team_types[len(team) :]
 
     if weights is None:
         stats = pokemon.columns[8:14]
@@ -377,7 +386,7 @@ def main(argv):
         "random",
         "utypes",
         "uteam",
-        "color"
+        "color",
     ]
     help_message = """usage: run.py [options]
     options:
