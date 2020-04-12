@@ -307,11 +307,24 @@ def print_team(team, color=False):
 
     team_images, cols = get_team_images(team, color=color)
 
-    rows = len(team_images[0])
     images = len(team_images)
+    upper_border = "_" * cols * images + "_" * (len(team) + 1)
+    middle_border = "-" * cols * images + "-" * (len(team) + 1)
+
     output = []
 
-    output.append("_" * cols * images + "_" * (len(team) + 1))
+    output.append(upper_border)
+    output = get_team_title(output, team, cols)
+    output.append(middle_border)
+    output = get_combined_team_images(output, team_images)
+    output.append(middle_border)
+    output = get_team_info(output, team, cols)
+    output.append(middle_border)
+
+    print("\n".join(output))
+
+
+def get_team_title(output, team, cols):
     team_output = ["|"]
     for pokemon in team:
         padding = cols - len(pokemon.name)
@@ -321,7 +334,29 @@ def print_team(team, color=False):
         team_output.append(title)
     output.append("".join(team_output))
 
-    output.append("-" * cols * images + "-" * (len(team) + 1))
+    return output
+
+
+def get_team_info(output, team, cols):
+    info_output = ["|"]
+    for pokemon in team:
+        info = pokemon.type_1.name
+        if pokemon.type_2 is not None:
+            info = f"{info}/{pokemon.type_2.name}"
+        padding = cols - len(info)
+        left_padding = padding // 2
+        right_padding = padding - left_padding
+        line = " " * left_padding + info + " " * right_padding + "|"
+        info_output.append(line)
+    output.append("".join(info_output))
+
+    return output
+
+
+def get_combined_team_images(output, team_images):
+    rows = len(team_images[0])
+    images = len(team_images)
+
     for row in range(rows):
         row_output = []
         for image in range(images):
@@ -330,10 +365,8 @@ def print_team(team, color=False):
             row_output.extend(team_images[image][row])
             row_output.append("|")
         output.append("".join(row_output))
-    output.append("-" * cols * images + "-" * (len(team) + 1))
 
-    combined_team_image = "\n".join(output)
-    print(combined_team_image)
+    return output
 
 
 def get_team_images(team, color=False):
@@ -356,12 +389,31 @@ def get_team_images(team, color=False):
 
 
 def print_team_statistics(team):
-    print("Statistics")
-    print("----------")
-    stats = np.zeros((len(team),))
+    print("--------------")
+    print("| Statistics |")
+    print("--------------")
+    total = np.zeros((len(team),))
+    hp = np.zeros((len(team),))
+    attack = np.zeros((len(team),))
+    defense = np.zeros((len(team),))
+    sp_attack = np.zeros((len(team),))
+    sp_defense = np.zeros((len(team),))
+    speed = np.zeros((len(team),))
     for (i, p) in enumerate(team):
-        stats[i] = p.get_total_stat()
-    print(f"Mean Total: {stats.mean():.2f}")
+        total[i] = p.get_total_stat()
+        hp[i] = p.hp
+        attack[i] = p.attack
+        defense[i] = p.defense
+        sp_attack[i] = p.sp_attack
+        sp_defense[i] = p.sp_defense
+        speed[i] = p.speed
+    print(f"Mean Total: {total.mean():.2f}")
+    print(f"Mean HP: {hp.mean():.2f}")
+    print(f"Mean Attack: {attack.mean():.2f}")
+    print(f"Mean Defense: {defense.mean():.2f}")
+    print(f"Mean Sp. Attack: {sp_attack.mean():.2f}")
+    print(f"Mean Sp. Defense: {sp_defense.mean():.2f}")
+    print(f"Mean Speed: {speed.mean():.2f}")
 
 
 def main(argv):
