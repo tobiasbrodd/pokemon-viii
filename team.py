@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import asciify
 import sys
+import os
 
 
 def load():
@@ -338,7 +339,9 @@ def get_team_images(team):
         image = asciify.get_image(path)
         if image is None:
             continue
-        ascii_image = asciify.convert(image, width=30)
+
+        width = os.get_terminal_size().columns // len(team) - 2
+        ascii_image = asciify.convert(image, width=width)
         team_images.append(ascii_image)
 
     return team_images
