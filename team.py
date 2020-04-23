@@ -33,16 +33,18 @@ def filter_pokemon(
     stats,
     types=None,
     stage=None,
+    skip_no=[],
     only_final=False,
     allow_legendary=True,
     allow_mythical=True,
 ):
-    pokemon = pokemon[pokemon["hp"] > stats[Stats.HP]]
-    pokemon = pokemon[pokemon["attack"] > stats[Stats.ATTACK]]
-    pokemon = pokemon[pokemon["defense"] > stats[Stats.DEFENSE]]
-    pokemon = pokemon[pokemon["sp_attack"] > stats[Stats.SP_ATTACK]]
-    pokemon = pokemon[pokemon["sp_defense"] > stats[Stats.SP_DEFENSE]]
-    pokemon = pokemon[pokemon["speed"] > stats[Stats.SPEED]]
+    pokemon = pokemon[~pokemon["no"].isin(skip_no)]
+    pokemon = pokemon[pokemon["hp"] >= stats[Stats.HP]]
+    pokemon = pokemon[pokemon["attack"] >= stats[Stats.ATTACK]]
+    pokemon = pokemon[pokemon["defense"] >= stats[Stats.DEFENSE]]
+    pokemon = pokemon[pokemon["sp_attack"] >= stats[Stats.SP_ATTACK]]
+    pokemon = pokemon[pokemon["sp_defense"] >= stats[Stats.SP_DEFENSE]]
+    pokemon = pokemon[pokemon["speed"] >= stats[Stats.SPEED]]
     pokemon = pokemon[
         pokemon["hp"]
         + pokemon["attack"]
@@ -50,7 +52,7 @@ def filter_pokemon(
         + pokemon["sp_attack"]
         + pokemon["sp_defense"]
         + pokemon["speed"]
-        > stats[Stats.TOTAL]
+        >= stats[Stats.TOTAL]
     ]
 
     if types is not None:
@@ -194,6 +196,7 @@ def main(argv):
         "help",
         "size=",
         "team=",
+        "skip=",
         "hp=",
         "attack=",
         "defense=",
@@ -217,6 +220,7 @@ def main(argv):
         -h, --help          Prints help message.
         --size s            Sets size of the team to 's'. Default: '6'.
         --team t            Sets team to 't'. Default: 'Empty'.
+        --skip s            Sets pokemon to skip to 's'. Default: 'Empty'.
         --hp h              Sets minimum HP to 'h'. Default: '0'.
         --attack a          Sets minimum attack to 'a'. Default: '0'.
         --defense d         Sets minimum defense to 'd'. Default: '0'.
@@ -227,7 +231,7 @@ def main(argv):
         --weights w         Sets weights to 'w'. Default: '1,1,1,1,1,1'.
         --types t           Sets types to 't. Default: 'All'.
         --stage s           Sets stage to 'ws'. Default: 'None'.
-        --gen g             Sets team generator 'g'. Default: 'NAIVE'.
+        --gen g             Sets team generator to 'g'. Default: 'NAIVE'.
         --final             Only allow final evolutions.
         --legendary         Don't allow legendary Pokemon.
         --mytical           Don't allow mythical Pokemon.
@@ -243,6 +247,7 @@ def main(argv):
 
     size = 6
     team_no = []
+    skip_no = []
     min_hp = 0
     min_attack = 0
     min_defense = 0
@@ -269,6 +274,8 @@ def main(argv):
             size = int(arg)
         elif opt == "--team":
             team_no = [int(no) for no in arg.split(",")]
+        elif opt == "--skip":
+            skip_no = [int(no) for no in arg.split(",")]
         elif opt == "--hp":
             min_hp = float(arg)
         elif opt == "--attack":
@@ -330,6 +337,7 @@ def main(argv):
         min_stats,
         types=types,
         stage=stage,
+        skip_no=skip_no,
         only_final=only_final,
         allow_legendary=allow_legendary,
         allow_mythical=allow_mythical,
