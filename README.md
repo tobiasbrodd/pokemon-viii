@@ -27,13 +27,13 @@ options:
 **--weights w:**        Sets weights to 'w'. Default: '1,1,1,1,1,1'.  
 **--types t:**          Sets types to 't. Default: 'All'.  
 **--stage s:**          Sets stage to 'ws'. Default: 'None'.  
+**--gen g:**            Sets team generator 'g'. Default: 'NAIVE'.  
 **--final:**            Only allow final evolutions.  
 **--legendary:**        Don't allow legendary Pokemon.  
 **--mytical:**          Don't allow mythical Pokemon.  
-**--random:**           Randomize team generation.  
-**--utypes:**           Enables unique type generation (if not random).
-**--uteam:**            Enables unique team generation.
-**--color:**            Enables colored output.
+**--utypes:**           Enables unique type generation (only for NAIVE).  
+**--uteam:**            Enables unique team generation (only for NAIVE/RANDOM).  
+**--color:**            Enables colored output.  
 
 ## Download
 
@@ -56,3 +56,9 @@ Scrapes Galarian Pokedex images from Serebii.
 
 options:  
 **-h, --help:**         Prints help message.  
+
+## Generators
+
+- NAIVE: Determines team members by first selecting best team types.
+- RANDOM: Randomly selects team members.
+- GENETIC: Selects team members by using a genetic algorithm.
