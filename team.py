@@ -345,9 +345,9 @@ def main(argv):
 
     generator = None
     if gen_type == GeneratorType.RANDOM:
-        generator = RandomGenerator(pokemon, team_no=team_no, size=size)
+        generator = RandomGenerator(pokemon, team_no=team_no, size=size, uteam=uteam)
     elif gen_type == GeneratorType.GENETIC:
-        generator = GeneticGenerator(pokemon, team_no=team_no, size=size)
+        generator = GeneticGenerator(pokemon, team_no=team_no, size=size, uteam=uteam)
     else:
         generator = NaiveGenerator(
             pokemon,
