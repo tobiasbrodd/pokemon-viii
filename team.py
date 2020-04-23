@@ -1,10 +1,13 @@
-from pokemon import Pokemon, Type, Stats
+from generators.genetic_generator import GeneticGenerator
 from generators.random_generator import RandomGenerator
 from generators.naive_generator import NaiveGenerator
+from generators.generator import GeneratorType
+from pokemon import Type, Stats
 from getopt import getopt, GetoptError
 import pandas as pd
 import numpy as np
 import asciify
+import tools
 import sys
 import os
 
@@ -153,10 +156,11 @@ def get_team_images(team, color=False):
     return team_images, width
 
 
-def print_team_statistics(team):
+def print_team_statistics(pokemon, team):
     print("--------------")
     print("| Statistics |")
     print("--------------")
+    nos = np.zeros((len(team),))
     total = np.zeros((len(team),))
     hp = np.zeros((len(team),))
     attack = np.zeros((len(team),))
@@ -165,6 +169,7 @@ def print_team_statistics(team):
     sp_defense = np.zeros((len(team),))
     speed = np.zeros((len(team),))
     for (i, p) in enumerate(team):
+        nos[i] = p.no
         total[i] = p.get_total_stat()
         hp[i] = p.hp
         attack[i] = p.attack
@@ -179,6 +184,7 @@ def print_team_statistics(team):
     print(f"Mean Sp. Attack: {sp_attack.mean():.2f}")
     print(f"Mean Sp. Defense: {sp_defense.mean():.2f}")
     print(f"Mean Speed: {speed.mean():.2f}")
+    print(f"Team Score: {tools.fitness(pokemon, nos):.2f}")
 
 
 def main(argv):
@@ -197,10 +203,10 @@ def main(argv):
         "weights=",
         "types=",
         "stage=",
+        "gen=",
         "final",
         "legendary",
         "mythical",
-        "random",
         "utypes",
         "uteam",
         "color",
@@ -220,12 +226,12 @@ def main(argv):
         --weights w         Sets weights to 'w'. Default: '1,1,1,1,1,1'.
         --types t           Sets types to 't. Default: 'All'.
         --stage s           Sets stage to 'ws'. Default: 'None'.
+        --gen g             Sets team generator 'g'. Default: 'NAIVE'.
         --final             Only allow final evolutions.
         --legendary         Don't allow legendary Pokemon.
         --mytical           Don't allow mythical Pokemon.
-        --random            Randomize team generation.
-        --utypes            Enables unique type generation (if not random).
-        --uteam             Enables unique team generation.
+        --utypes            Enables unique type generation (only for NAIVE).
+        --uteam             Enables unique team generation (only for NAIVE/RANDOM).
         --color             Enables colored output."""
 
     try:
@@ -249,7 +255,7 @@ def main(argv):
     only_final = False
     allow_legendary = True
     allow_mythical = True
-    randomize = False
+    gen_type = GeneratorType.NAIVE
     utypes = False
     uteam = False
     color = False
@@ -282,14 +288,14 @@ def main(argv):
             types = [Type[t.strip().upper()] for t in arg.split(",")]
         elif opt == "--stage":
             stage = int(arg)
+        elif opt == "--gen":
+            gen_type = GeneratorType[arg.upper()]
         elif opt == "--final":
             only_final = True
         elif opt == "--legendary":
             allow_legendary = False
         elif opt == "--mythical":
             allow_mythical = False
-        elif opt == "--random":
-            randomize = True
         elif opt == "--utypes":
             utypes = True
         elif opt == "--uteam":
@@ -329,8 +335,10 @@ def main(argv):
     )
 
     generator = None
-    if randomize:
+    if gen_type == GeneratorType.RANDOM:
         generator = RandomGenerator(pokemon, team_no=team_no, size=size)
+    elif gen_type == GeneratorType.GENETIC:
+        generator = GeneticGenerator(pokemon, team_no=team_no, size=size)
     else:
         generator = NaiveGenerator(
             pokemon,
@@ -345,7 +353,7 @@ def main(argv):
 
     print_team(team, color=color)
     print("")
-    print_team_statistics(team)
+    print_team_statistics(pokemon, team)
 
 
 if __name__ == "__main__":
