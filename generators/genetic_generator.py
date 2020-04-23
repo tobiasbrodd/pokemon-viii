@@ -19,7 +19,7 @@ class GeneticGenerator(Generator):
     ):
         self.pokemon = pokemon
         self.team_no = team_no
-        self.size = size
+        self.size = size - len(team_no)
         self.uteam = uteam
         self.weight = weight
         self.gens = gens
@@ -28,6 +28,11 @@ class GeneticGenerator(Generator):
         self.cross = cross
         self.mut = mut
         self.team = []
+
+        if len(self.team_no) > 0:
+            self.team_idx = tools.no_to_idx(self.pokemon, self.team_no)
+        else:
+            self.team_idx = []
 
     def generate(self):
         """Runs simulation."""
@@ -39,7 +44,8 @@ class GeneticGenerator(Generator):
         best = np.argmax(fit)
         best_fit = fit[best]
         prev_fit = best_fit
-        best_team = self.pokemon.iloc[teams[best], :]["name"].to_numpy()
+        team_idx = np.concatenate((self.team_idx, teams[best]))
+        best_team = self.pokemon.iloc[team_idx, :]["name"].to_numpy()
         prev_team = best_team
         initial = fit[best]
 
@@ -49,7 +55,8 @@ class GeneticGenerator(Generator):
             fit = self._fitness(teams)
             best = np.argmax(fit)
             best_fit = fit[best]
-            best_team = self.pokemon.iloc[teams[best], :]["name"].to_numpy()
+            team_idx = np.concatenate((self.team_idx, teams[best]))
+            best_team = self.pokemon.iloc[team_idx, :]["name"].to_numpy()
             self._progress(prev_fit, prev_team, best_fit, best_team)
             prev_fit = best_fit
             prev_team = best_team
@@ -59,7 +66,7 @@ class GeneticGenerator(Generator):
 
         self._summary(initial, best_fit)
 
-        team_idx = teams[best]
+        team_idx = np.concatenate((self.team_idx, teams[best]))
         pkmns = self.pokemon.iloc[team_idx, :]
         rows = pkmns.shape[0]
         for row in range(rows):
@@ -152,6 +159,7 @@ class GeneticGenerator(Generator):
         fit = np.zeros((rows,))
         for row in range(rows):
             team_idx = teams[row, :]
+            team_idx = np.concatenate((self.team_idx, team_idx))
             team = self.pokemon.iloc[team_idx, :]
 
             stats = team.iloc[:, tools.STAT_COLS].to_numpy(dtype=float)
@@ -175,6 +183,7 @@ class GeneticGenerator(Generator):
         """Evaluates fitness for team members."""
 
         team_idx = team
+        team_idx = np.concatenate((self.team_idx, team_idx))
         team = self.pokemon.iloc[team_idx, :]
 
         stats = team.iloc[:, tools.STAT_COLS].to_numpy(dtype=float)
