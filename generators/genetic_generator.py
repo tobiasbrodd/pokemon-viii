@@ -10,12 +10,12 @@ class GeneticGenerator(Generator):
         team_no=[],
         size=6,
         uteam=False,
-        weight=1,
+        weight=0.5,
         gens=10,
         prop=0.8,
         teams=100,
         cross=2,
-        replace=3,
+        mut=3,
     ):
         self.pokemon = pokemon
         self.team_no = team_no
@@ -26,7 +26,7 @@ class GeneticGenerator(Generator):
         self.prop = prop
         self.teams = teams
         self.cross = cross
-        self.replace = replace
+        self.mut = mut
         self.team = []
 
     def generate(self):
@@ -157,9 +157,9 @@ class GeneticGenerator(Generator):
             stats = team.iloc[:, tools.STAT_COLS].to_numpy(dtype=float)
             weaknesses = team.iloc[:, tools.WEAK_COLS].to_numpy(dtype=float)
 
+            n_team = team.shape[0]
             stat_score = np.mean(np.sum(stats, axis=0))
-            weak_score = np.mean(np.sum(weaknesses, axis=0))
-
+            weak_score = np.sum(np.sum(weaknesses, axis=0)) / n_team
             stat_score = (stat_score - tools.MIN_STAT) / tools.MAX_STAT
             weak_score = (weak_score - tools.MIN_WEAK) / tools.MAX_WEAK
 
@@ -190,7 +190,6 @@ class GeneticGenerator(Generator):
         weak_scores = np.minimum(weak_scores, 1)
 
         weak_scores = 1 - weak_scores
-
         fit = self.weight * stat_scores + (1 - self.weight) * weak_scores
 
         return fit
@@ -221,7 +220,7 @@ class GeneticGenerator(Generator):
         n = self.pokemon.shape[0]
         n_teams = teams.shape[0]
         n_team = teams.shape[1]
-        size = (n_teams, self.replace)
+        size = (n_teams, self.mut)
         replace_idx = np.random.choice(n_team, size=size, replace=True)
 
         if self.uteam:

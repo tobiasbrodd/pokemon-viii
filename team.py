@@ -159,7 +159,7 @@ def get_team_images(team, color=False):
     return team_images, width
 
 
-def print_team_statistics(pokemon, team):
+def print_team_statistics(pokemon, team, weight):
     print("--------------")
     print("| Statistics |")
     print("--------------")
@@ -187,7 +187,7 @@ def print_team_statistics(pokemon, team):
     print(f"Mean Sp. Attack: {sp_attack.mean():.2f}")
     print(f"Mean Sp. Defense: {sp_defense.mean():.2f}")
     print(f"Mean Speed: {speed.mean():.2f}")
-    print(f"Team Score: {tools.fitness(pokemon, nos):.2f}")
+    print(f"Team Score: {tools.fitness(pokemon, nos, weight=weight):.2f}")
 
 
 def main(argv):
@@ -208,6 +208,12 @@ def main(argv):
         "types=",
         "stage=",
         "gen=",
+        "weight=",
+        "gens=",
+        "prop=",
+        "teams=",
+        "cross=",
+        "mut=",
         "final",
         "legendary",
         "mythical",
@@ -232,6 +238,12 @@ def main(argv):
         --types t           Sets types to 't. Default: 'All'.
         --stage s           Sets stage to 'ws'. Default: 'None'.
         --gen g             Sets team generator to 'g'. Default: 'NAIVE'.
+        --weight w          Sets weight to 'w'. Default: '0.5'.
+        --gens g            Sets genetic generations to 'g'. Default: '10'.
+        --prop p            Sets genetic proportion to 'p'. Default: '0.8'.
+        --teams t           Sets genetic teams to 't'. Default: '100'.
+        --cross c           Sets genetic crossing to 'c'. Default: '2'.
+        --mut m             Sets genetic mutations to 'm'. Default: '3'.
         --final             Only allow final evolutions.
         --legendary         Don't allow legendary Pokemon.
         --mytical           Don't allow mythical Pokemon.
@@ -262,6 +274,12 @@ def main(argv):
     allow_legendary = True
     allow_mythical = True
     gen_type = GeneratorType.NAIVE
+    weight = 0.5
+    gens = 10
+    prop = 0.8
+    teams = 100
+    cross = 2
+    mut = 3
     utypes = False
     uteam = False
     color = False
@@ -292,12 +310,16 @@ def main(argv):
             min_total = float(arg)
         elif opt == "--weights":
             weights = np.asmatrix([float(w) for w in arg.split(",")])
+        elif opt == "--weight":
+            weight = float(arg)
         elif opt == "--types":
             types = [Type[t.strip().upper()] for t in arg.split(",")]
         elif opt == "--stage":
             stage = int(arg)
         elif opt == "--gen":
             gen_type = GeneratorType[arg.upper()]
+        elif opt == "--gens":
+            gens = int(arg)
         elif opt == "--final":
             only_final = True
         elif opt == "--legendary":
@@ -347,7 +369,18 @@ def main(argv):
     if gen_type == GeneratorType.RANDOM:
         generator = RandomGenerator(pokemon, team_no=team_no, size=size, uteam=uteam)
     elif gen_type == GeneratorType.GENETIC:
-        generator = GeneticGenerator(pokemon, team_no=team_no, size=size, uteam=uteam)
+        generator = GeneticGenerator(
+            pokemon,
+            team_no=team_no,
+            size=size,
+            uteam=uteam,
+            weight=weight,
+            gens=gens,
+            prop=prop,
+            teams=teams,
+            cross=cross,
+            mut=mut,
+        )
     else:
         generator = NaiveGenerator(
             pokemon,
@@ -362,7 +395,7 @@ def main(argv):
 
     print_team(team, color=color)
     print("")
-    print_team_statistics(pokemon, team)
+    print_team_statistics(pokemon, team, weight)
 
 
 if __name__ == "__main__":

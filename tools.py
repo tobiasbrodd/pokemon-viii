@@ -24,8 +24,9 @@ def fitness(pokemon, team_no, weight=0.5):
     stats = team.iloc[:, STAT_COLS].to_numpy(dtype=float)
     weaknesses = team.iloc[:, WEAK_COLS].to_numpy(dtype=float)
 
+    n_team = team.shape[0]
     stat_score = np.mean(np.sum(stats, axis=0))
-    weak_score = np.mean(np.sum(weaknesses, axis=0))
+    weak_score = np.sum(np.sum(weaknesses, axis=0)) / n_team
 
     stat_score = (stat_score - MIN_STAT) / MAX_STAT
     weak_score = (weak_score - MIN_WEAK) / MAX_WEAK
