@@ -15,7 +15,7 @@ class NaiveGenerator(Generator):
         self.uteam = uteam
         self.team = []
 
-        stats = self.pokemon.columns[8:14]
+        stats = self.pokemon.columns[tools.STAT_COLS]
         if weights is None:
             weights = np.ones((1, 6))
         self.weights = pd.DataFrame(weights, columns=stats)
@@ -39,10 +39,10 @@ class NaiveGenerator(Generator):
                 self.pokemon["type_1"] == type_1, self.pokemon["type_2"] == type_2
             )
             pkmn = self.pokemon.loc[fltr].head(1).to_numpy()
-            weaknesses.append(pkmn[:, 14:].reshape(-1,))
+            weaknesses.append(pkmn[:, tools.WEAK_COLS].reshape(-1,))
             indices[t] = i
 
-        all_types = self.pokemon.columns[14:]
+        all_types = self.pokemon.columns[tools.WEAK_COLS]
         weaknesses = np.asmatrix(weaknesses)
         multi_index = pd.MultiIndex.from_tuples(types)
         weaknesses = pd.DataFrame(weaknesses, index=multi_index, columns=all_types)
@@ -185,7 +185,7 @@ class NaiveGenerator(Generator):
             pkmns = pkmns[~pkmns.loc[:, "name"].isin(team_names)]
         if pkmns.empty:
             return None
-        stats = pkmns.iloc[:, 8:14]
+        stats = pkmns.iloc[:, tools.STAT_COLS]
         weighted_stats = stats.multiply(self.weights.to_numpy())
         index = weighted_stats.sum(axis=1).idxmax(axis=0)
         pkmn = pkmns.loc[index]

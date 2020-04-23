@@ -21,10 +21,7 @@ class RandomGenerator(Generator):
 
         n = self.pokemon.shape[0]
         rdx = []
-        if unique:
-            rdx = np.random.choice(n, self.size - len(self.team))
-        else:
-            rdx = np.random.randint(0, n, self.size - len(self.team))
+        rdx = np.random.choice(n, self.size - len(self.team), replace=(not unique))
         pkmns = self.pokemon.iloc[rdx, :]
         rows = pkmns.shape[0]
         for row in range(rows):
