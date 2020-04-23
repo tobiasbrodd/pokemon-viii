@@ -5,10 +5,12 @@ import numpy as np
 STAT_COLS = range(8, 14)
 WEAK_COLS = range(14, 32)
 MAX_STAT = 720
-MIN_WEAK = 26
+MIN_STAT = 100
+MAX_WEAK = 26
+MIN_WEAK = 13
 
 
-def fitness(pokemon, team_no, weight=0.25):
+def fitness(pokemon, team_no, weight=0.5):
     """Evaluates fitness for a team."""
 
     pokemon = pokemon.reset_index(drop=True)
@@ -22,12 +24,11 @@ def fitness(pokemon, team_no, weight=0.25):
     stats = team.iloc[:, STAT_COLS].to_numpy(dtype=float)
     weaknesses = team.iloc[:, WEAK_COLS].to_numpy(dtype=float)
 
-    n_team = team.shape[0]
     stat_score = np.mean(np.sum(stats, axis=0))
-    weak_score = np.sum(np.sum(weaknesses, axis=0)) / n_team
+    weak_score = np.mean(np.sum(weaknesses, axis=0))
 
-    stat_score /= MAX_STAT
-    weak_score /= MIN_WEAK
+    stat_score = (stat_score - MIN_STAT) / MAX_STAT
+    weak_score = (weak_score - MIN_WEAK) / MAX_WEAK
 
     stat_score = np.minimum(stat_score, 1)
     weak_score = np.minimum(weak_score, 1)
