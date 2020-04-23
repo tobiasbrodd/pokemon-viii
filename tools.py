@@ -10,14 +10,22 @@ MAX_WEAK = 26
 MIN_WEAK = 13
 
 
-def fitness(pokemon, team_no, weight=0.5):
-    """Evaluates fitness for a team."""
+def no_to_idx(pokemon, team_no):
+    """Converts NOs to indices."""
 
     pokemon = pokemon.reset_index(drop=True)
     unique_team = pokemon[pokemon["no"].isin(team_no)]
     team_idx = np.zeros((len(team_no),))
     for (i, no) in enumerate(team_no):
         team_idx[i] = unique_team[unique_team["no"] == no].index.item()
+
+    return team_idx
+
+
+def fitness(pokemon, team_no, weight=0.5):
+    """Evaluates fitness for a team."""
+
+    team_idx = no_to_idx(pokemon, team_no)
 
     team = pokemon.iloc[team_idx, :]
 
