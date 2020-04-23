@@ -1,5 +1,6 @@
 from pokemon import Pokemon, Type, Stats
-from generators import RandomGenerator, NaiveGenerator
+from generators.random_generator import RandomGenerator
+from generators.naive_generator import NaiveGenerator
 from getopt import getopt, GetoptError
 import pandas as pd
 import numpy as np
