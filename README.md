@@ -28,6 +28,12 @@ options:
 **--types t:**          Sets types to 't. Default: 'All'.  
 **--stage s:**          Sets stage to 'ws'. Default: 'None'.  
 **--gen g:**            Sets team generator 'g'. Default: 'NAIVE'.  
+**--weight w:**         Sets weight to 'w'. Default: '0.5'.  
+**--gens g:**           Sets genetic generations to 'g'. Default: '10'.  
+**--prop p:**           Sets genetic proportion to 'p'. Default: '0.8'.  
+**--teams t:**          Sets genetic teams to 't'. Default: '100'.  
+**--cross c:**          Sets genetic crossing to 'c'. Default: '2'.  
+**--mut m:**            Sets genetic mutations to 'm'. Default: '3'.  
 **--final:**            Only allow final evolutions.  
 **--legendary:**        Don't allow legendary Pokemon.  
 **--mytical:**          Don't allow mythical Pokemon.  
