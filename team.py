@@ -95,10 +95,11 @@ def print_team(team, color=False):
 def get_team_title(output, team, cols):
     team_output = ["|"]
     for pokemon in team:
-        padding = cols - len(pokemon.name)
+        title = f"{pokemon.name} ({pokemon.no})"
+        padding = cols - len(title)
         left_padding = padding // 2
         right_padding = padding - left_padding
-        title = " " * left_padding + pokemon.name + " " * right_padding + "|"
+        title = " " * left_padding + title + " " * right_padding + "|"
         team_output.append(title)
     output.append("".join(team_output))
 
