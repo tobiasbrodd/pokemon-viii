@@ -70,7 +70,7 @@ class NaiveGenerator(Generator):
         for i in range(split):
             t = team[i]
             team_types.append(t)
-            chart = update_chart(weaknesses, chart, t)
+            chart = self._update_chart(weaknesses, chart, t)
 
         for i in range(split, self.size):
             t = self._get_best_type(chart, types)
