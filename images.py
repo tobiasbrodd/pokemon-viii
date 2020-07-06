@@ -1,10 +1,10 @@
 from getopt import getopt, GetoptError
-from scraper import ImageScraper
+from scraper import ImageScraper, Dex
 import pandas as pd
 import sys
 
 
-def load(dex=dex):
+def load(dex=Dex.GALAR):
     file_name = f"data/pokemon_{dex.value}.csv"
     pokemon = pd.read_csv(file_name, sep=",")
     pokemon.fillna("", inplace=True)
@@ -36,7 +36,7 @@ def main(argv):
             dex = Dex[arg.upper()]
 
     scraper = ImageScraper()
-    urls = load()
+    urls = load(dex=dex)
     failed = scraper.download_images(urls)
 
     if len(failed) > 0:
