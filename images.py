@@ -4,21 +4,21 @@ import pandas as pd
 import sys
 
 
-def load():
-    pokemon = pd.read_csv("data/pokemon.csv", sep=",")
+def load(dex=dex):
+    file_name = f"data/pokemon_{dex.value}.csv"
+    pokemon = pd.read_csv(file_name, sep=",")
     pokemon.fillna("", inplace=True)
 
-    return pokemon["no"][200:]
+    return pokemon["no"]
 
 
 def main(argv):
     short_options = "h"
-    long_options = [
-        "help",
-    ]
+    long_options = ["help", "dex="]
     help_message = """usage: images.py [options]
     options:
-        -h, --help          Prints help message."""
+        -h, --help          Prints help message.
+        --dex d             Downloads dex 'd'. Default: 'GALAR'."""
 
     try:
         opts, args = getopt(argv, shortopts=short_options, longopts=long_options)
@@ -26,10 +26,14 @@ def main(argv):
         print(help_message)
         return
 
+    dex = Dex.GALAR
+
     for opt, arg in opts:
         if opt in ["-h", "--help"]:
             print(help_message)
             return
+        elif opt == "--dex":
+            dex = Dex[arg.upper()]
 
     scraper = ImageScraper()
     urls = load()
