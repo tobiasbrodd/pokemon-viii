@@ -17,7 +17,8 @@ def load(dex=Dex.ALL):
     if dex == Dex.ALL:
         galar_dex = load_dex(dex=Dex.GALAR)
         armor_dex = load_dex(dex=Dex.ARMOR)
-        return pd.concat([galar_dex, armor_dex])
+        dex = pd.concat([galar_dex, armor_dex])
+        return dex.drop_duplicates()
     else:
         return load_dex(dex=dex)
 
