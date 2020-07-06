@@ -64,6 +64,7 @@ Scrapes Galarian Pokedex images from Serebii.
 
 options:  
 **-h, --help:**         Prints help message.  
+**--dex d:**            Sets dex to 'd'. Default: 'GALAR'.  
 
 ## Generators
 
