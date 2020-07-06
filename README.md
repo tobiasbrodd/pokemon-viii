@@ -15,6 +15,7 @@ Generates a Pokemon team and prints the team as ASCII images.
 
 options:  
 **-h, --help:**         Prints help message.  
+**--dex d:**            Sets dex to 'd'. Default: 'GALAR'.  
 **--size s:**           Sets size of the team to 's'. Default: '6'.  
 **--team t:**           Sets team to 't'. Default: 'Empty'.
 **--hp h:**             Sets minimum HP to 'h'. Default: '0'.  
@@ -51,6 +52,7 @@ Scrapes Galarian Pokedex Pokemon from Serebii.
 
 options:  
 **-h, --help:**         Prints help message.  
+**--dex d:**            Sets dex to 'd'. Default: 'GALAR'.  
 
 ## Images
 
