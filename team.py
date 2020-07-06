@@ -3,6 +3,7 @@ from generators.random_generator import RandomGenerator
 from generators.naive_generator import NaiveGenerator
 from generators.generator import GeneratorType
 from pokemon import Type, Stats
+from scraper import Dex
 from getopt import getopt, GetoptError
 import pandas as pd
 import numpy as np
@@ -12,8 +13,17 @@ import sys
 import os
 
 
-def load():
-    pokemon = pd.read_csv("data/pokemon.csv", sep=",")
+def load(dex=Dex.ALL):
+    if dex == Dex.ALL:
+        galar_dex = load(dex=Dex.GALAR)
+        armor_dex = load(dex=Dex.ARMOR)
+        return pd.concat([galar_dex, armor_dex])
+    else:
+        return load(dex=dex)
+
+def load_dex(dex):
+    file_name = f"data/pokemon_{dex.value}.csv"
+    pokemon = pd.read_csv(file_name, sep=",")
     pokemon.fillna("", inplace=True)
 
     rows = pokemon.shape[0]
@@ -194,6 +204,7 @@ def main(argv):
     short_options = "h"
     long_options = [
         "help",
+        "dex=",
         "size=",
         "team=",
         "skip=",
@@ -224,6 +235,7 @@ def main(argv):
     help_message = """usage: run.py [options]
     options:
         -h, --help          Prints help message.
+        --dex d             Sets dex to 'd'. Default: 'GALAR'.
         --size s            Sets size of the team to 's'. Default: '6'.
         --team t            Sets team to 't'. Default: 'Empty'.
         --skip s            Sets pokemon to skip to 's'. Default: 'Empty'.
@@ -257,6 +269,7 @@ def main(argv):
         print(help_message)
         return
 
+    dex = Dex.GALAR
     size = 6
     team_no = []
     skip_no = []
@@ -288,6 +301,8 @@ def main(argv):
         if opt in ["-h", "--help"]:
             print(help_message)
             return
+        elif opt == "--size":
+            dex = Dex[arg.upper()]
         elif opt == "--size":
             size = int(arg)
         elif opt == "--team":
@@ -353,7 +368,7 @@ def main(argv):
         Stats.TOTAL: min_total,
     }
 
-    pokemon = load()
+    pokemon = load(dex=dex)
     pokemon = filter_pokemon(
         pokemon,
         min_stats,

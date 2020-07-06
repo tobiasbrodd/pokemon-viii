@@ -1,10 +1,11 @@
 from getopt import getopt, GetoptError
-from scraper import PokemonScraper
+from scraper import PokemonScraper, Dex
 import sys
 
 
-def save(pokemon):
-    with open("data/pokemon.csv", "w") as f:
+def save(pokemon, dex=Dex.GALAR):
+    file_name = f"data/pokemon_{dex.value}.csv"
+    with open(file_name, "w") as f:
         header = [
             "no",
             "name",
@@ -46,12 +47,11 @@ def save(pokemon):
 
 def main(argv):
     short_options = "h"
-    long_options = [
-        "help",
-    ]
+    long_options = ["help", "dex="]
     help_message = """usage: download.py [options]
     options:
-        -h, --help          Prints help message."""
+        -h, --help          Prints help message.
+        --dex d             Downloads dex 'd'. Default: 'GALAR'."""
 
     try:
         opts, args = getopt(argv, shortopts=short_options, longopts=long_options)
@@ -59,13 +59,17 @@ def main(argv):
         print(help_message)
         return
 
+    dex = Dex.GALAR
+
     for opt, arg in opts:
         if opt in ["-h", "--help"]:
             print(help_message)
             return
+        elif opt == "--dex":
+            dex = Dex[arg.upper()]
 
     scraper = PokemonScraper()
-    urls = scraper.get_urls()
+    urls = scraper.get_urls(dex=dex)
     pokemon, failed = scraper.get_pokemon(urls)
 
     if len(failed) > 0:
@@ -76,7 +80,7 @@ def main(argv):
         print("Scraped:")
         print([p.name for p in pokemon])
 
-    save(pokemon)
+    save(pokemon, dex=dex)
 
 
 if __name__ == "__main__":

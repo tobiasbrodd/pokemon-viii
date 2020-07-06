@@ -3,19 +3,28 @@ from multiprocessing import Manager, Process, Pool, cpu_count
 from urllib import request as req
 from functools import partial
 from bs4 import BeautifulSoup
+from enum import Enum
 import requests
 import time
 import re
 
 
+class Dex(Enum):
+    GALAR = "galar"
+    ARMOR = "armor"
+    ALL = "all"
+
+
 class PokemonScraper:
     def __init__(self):
         self.base_url = "https://www.serebii.net"
-        self.dex_url = self.base_url + "/swordshield/galarpokedex.shtml"
+        self.galar_dex_url = self.base_url + "/swordshield/galarpokedex.shtml"
+        self.armor_dex_url = self.base_url + "/swordshield/isleofarmordex.shtml"
 
-    def get_urls(self):
+    def get_urls(self, dex=Dex.GALAR):
         urls = []
-        response = requests.get(self.dex_url)
+        dex_url = self.galar_dex_url if dex == Dex.GALAR else self.armor_dex_url
+        response = requests.get(dex_url)
 
         soup = BeautifulSoup(response.text, "html.parser")
         table = soup.find_all("table", limit=2)[1]

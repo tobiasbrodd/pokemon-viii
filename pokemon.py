@@ -16,7 +16,7 @@ class Pokemon:
     ):
         self.no = no
         self.name = name
-        self.type_1 = types[0]
+        self.type_1 = None if len(types) < 1 else types[0]
         self.type_2 = None if len(types) < 2 else types[1]
         self.stage = stage
         self.is_final = is_final
