@@ -15,11 +15,11 @@ import os
 
 def load(dex=Dex.ALL):
     if dex == Dex.ALL:
-        galar_dex = load(dex=Dex.GALAR)
-        armor_dex = load(dex=Dex.ARMOR)
+        galar_dex = load_dex(dex=Dex.GALAR)
+        armor_dex = load_dex(dex=Dex.ARMOR)
         return pd.concat([galar_dex, armor_dex])
     else:
-        return load(dex=dex)
+        return load_dex(dex=dex)
 
 def load_dex(dex):
     file_name = f"data/pokemon_{dex.value}.csv"
@@ -235,7 +235,7 @@ def main(argv):
     help_message = """usage: run.py [options]
     options:
         -h, --help          Prints help message.
-        --dex d             Sets dex to 'd'. Default: 'GALAR'.
+        --dex d             Sets dex to 'd'. Default: 'ALL'.
         --size s            Sets size of the team to 's'. Default: '6'.
         --team t            Sets team to 't'. Default: 'Empty'.
         --skip s            Sets pokemon to skip to 's'. Default: 'Empty'.
@@ -269,7 +269,7 @@ def main(argv):
         print(help_message)
         return
 
-    dex = Dex.GALAR
+    dex = Dex.ALL
     size = 6
     team_no = []
     skip_no = []
@@ -301,7 +301,7 @@ def main(argv):
         if opt in ["-h", "--help"]:
             print(help_message)
             return
-        elif opt == "--size":
+        elif opt == "--dex":
             dex = Dex[arg.upper()]
         elif opt == "--size":
             size = int(arg)
