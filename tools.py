@@ -74,12 +74,14 @@ def frame_to_pokemon(frame):
         Stats.SP_DEFENSE: frame["sp_defense"],
         Stats.SPEED: frame["speed"],
     }
-    weaknesses = frame[14:]
+    
     stage = frame["stage"]
     is_final = frame["is_final"]
     is_legendary = frame["is_legendary"]
     is_mythical = frame["is_mythical"]
-
+    is_ultra = frame["is_ultra"]
+    weaknesses = frame[15:].to_dict()
+    
     pokemon = Pokemon(
         no,
         name,
@@ -90,6 +92,7 @@ def frame_to_pokemon(frame):
         is_final=is_final,
         is_legendary=is_legendary,
         is_mythical=is_mythical,
+        is_ultra=is_ultra
     )
 
     return pokemon
