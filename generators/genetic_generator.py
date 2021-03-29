@@ -1,4 +1,5 @@
 from generators.generator import Generator
+from numpy.random import default_rng
 import numpy as np
 import tools
 
@@ -16,6 +17,7 @@ class GeneticGenerator(Generator):
         teams=100,
         cross=2,
         mut=3,
+        seed=123,
     ):
         self.pokemon = pokemon
         self.team_no = team_no
@@ -28,6 +30,7 @@ class GeneticGenerator(Generator):
         self.cross = cross
         self.mut = mut
         self.team = []
+        self.rng = default_rng(seed)
 
         if len(self.team_no) > 0:
             self.team_idx = tools.no_to_idx(self.pokemon, self.team_no)
@@ -101,9 +104,9 @@ class GeneticGenerator(Generator):
         if self.uteam:
             teams = np.zeros(size)
             for row in range(size[0]):
-                teams[row, :] = np.random.choice(n, size=size[1], replace=False)
+                teams[row, :] = self.rng.choice(n, size=size[1], replace=False)
         else:
-            teams = np.random.choice(n, size=size, replace=True)
+            teams = self.rng.choice(n, size=size, replace=True)
 
         return teams
 
@@ -141,7 +144,7 @@ class GeneticGenerator(Generator):
 
         rows = int(n * self.prop)
         idx_size = (rows, self.cross)
-        idx = np.random.choice(n, size=idx_size, replace=True, p=probs)
+        idx = self.rng.choice(n, size=idx_size, replace=True, p=probs)
 
         cols = teams.shape[1]
         sel_size = (rows, cols, self.cross)
@@ -230,14 +233,14 @@ class GeneticGenerator(Generator):
         n_teams = teams.shape[0]
         n_team = teams.shape[1]
         size = (n_teams, self.mut)
-        replace_idx = np.random.choice(n_team, size=size, replace=True)
+        replace_idx = self.rng.choice(n_team, size=size, replace=True)
 
         if self.uteam:
             for row in range(n_teams):
                 new_idx = self._get_unique(teams[row, :], n, size)
                 teams[row, replace_idx[row]] = new_idx
         else:
-            new_idx = np.random.choice(n, size=size, replace=True)
+            new_idx = self.rng.choice(n, size=size, replace=True)
             for row in range(n_teams):
                 teams[row, replace_idx[row]] = new_idx[row]
 
@@ -249,7 +252,7 @@ class GeneticGenerator(Generator):
         unique = True
         new_idx = None
         while unique:
-            new_idx = np.random.choice(n, size=size[1], replace=False)
+            new_idx = self.rng.choice(n, size=size[1], replace=False)
             unique = np.sum(np.isin(new_idx, team))
 
         return new_idx
