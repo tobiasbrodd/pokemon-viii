@@ -13,6 +13,7 @@ class Pokemon:
         is_final=False,
         is_legendary=False,
         is_mythical=False,
+        is_ultra=False,
     ):
         self.no = no
         self.name = name
@@ -22,6 +23,7 @@ class Pokemon:
         self.is_final = is_final
         self.is_legendary = is_legendary
         self.is_mythical = is_mythical
+        self.is_ultra = is_ultra
         self.hp = stats[Stats.HP]
         self.attack = stats[Stats.ATTACK]
         self.defense = stats[Stats.DEFENSE]
