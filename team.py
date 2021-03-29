@@ -24,6 +24,7 @@ def load(dex=Dex.ALL):
     else:
         return load_dex(dex=dex)
 
+
 def load_dex(dex):
     file_name = f"data/pokemon_{dex.value}.csv"
     pokemon = pd.read_csv(file_name, sep=",")
@@ -210,6 +211,7 @@ def main(argv):
     short_options = "h"
     long_options = [
         "help",
+        "seed=",
         "dex=",
         "size=",
         "team=",
@@ -242,6 +244,7 @@ def main(argv):
     help_message = """usage: run.py [options]
     options:
         -h, --help          Prints help message.
+        --seed s            Sets random seed to 's'. Default: '123'.
         --dex d             Sets dex to 'd'. Default: 'ALL'.
         --size s            Sets size of the team to 's'. Default: '6'.
         --team t            Sets team to 't'. Default: 'Empty'.
@@ -277,6 +280,7 @@ def main(argv):
         print(help_message)
         return
 
+    seed = 123
     dex = Dex.ALL
     size = 6
     team_no = []
@@ -310,6 +314,8 @@ def main(argv):
         if opt in ["-h", "--help"]:
             print(help_message)
             return
+        elif opt == "--seed":
+            seed = int(arg)
         elif opt == "--dex":
             dex = Dex[arg.upper()]
         elif opt == "--size":
@@ -394,7 +400,9 @@ def main(argv):
 
     generator = None
     if gen_type == GeneratorType.RANDOM:
-        generator = RandomGenerator(pokemon, team_no=team_no, size=size, uteam=uteam)
+        generator = RandomGenerator(
+            pokemon, team_no=team_no, size=size, uteam=uteam, seed=seed
+        )
     elif gen_type == GeneratorType.GENETIC:
         generator = GeneticGenerator(
             pokemon,
@@ -407,6 +415,7 @@ def main(argv):
             teams=teams,
             cross=cross,
             mut=mut,
+            seed=seed,
         )
     else:
         generator = NaiveGenerator(
