@@ -12,6 +12,8 @@ import re
 class Dex(Enum):
     GALAR = "galar"
     ARMOR = "armor"
+    CROWN = "crown"
+    OTHER = "other"
     ALL = "all"
 
 
@@ -20,10 +22,20 @@ class PokemonScraper:
         self.base_url = "https://www.serebii.net"
         self.galar_dex_url = self.base_url + "/swordshield/galarpokedex.shtml"
         self.armor_dex_url = self.base_url + "/swordshield/isleofarmordex.shtml"
+        self.crown_dex_url = self.base_url + "/swordshield/thecrowntundradex.shtml"
+        self.other_dex_url = self.base_url + "/swordshield/pokemonnotindex.shtml"
 
     def get_urls(self, dex=Dex.GALAR):
         urls = []
-        dex_url = self.galar_dex_url if dex == Dex.GALAR else self.armor_dex_url
+        if dex == Dex.GALAR:
+            dex_url = self.galar_dex_url
+        elif dex == Dex.ARMOR:
+            dex_url = self.armor_dex_url
+        elif dex == Dex.CROWN:
+            dex_url = self.crown_dex_url
+        else:
+            dex_url = self.other_dex_url
+
         response = requests.get(dex_url)
 
         soup = BeautifulSoup(response.text, "html.parser")
