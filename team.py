@@ -17,7 +17,9 @@ def load(dex=Dex.ALL):
     if dex == Dex.ALL:
         galar_dex = load_dex(dex=Dex.GALAR)
         armor_dex = load_dex(dex=Dex.ARMOR)
-        dex = pd.concat([galar_dex, armor_dex])
+        crown_dex = load_dex(dex=Dex.CROWN)
+        other_dex = load_dex(dex=Dex.OTHER)
+        dex = pd.concat([galar_dex, armor_dex, crown_dex, other_dex])
         return dex.drop_duplicates()
     else:
         return load_dex(dex=dex)
@@ -48,6 +50,7 @@ def filter_pokemon(
     only_final=False,
     allow_legendary=True,
     allow_mythical=True,
+    allow_ultra=True,
 ):
     pokemon = pokemon[~pokemon["no"].isin(skip_no)]
     pokemon = pokemon[pokemon["hp"] >= stats[Stats.HP]]
@@ -78,6 +81,8 @@ def filter_pokemon(
         pokemon = pokemon[pokemon["is_legendary"] == 0]
     if not allow_mythical:
         pokemon = pokemon[pokemon["is_mythical"] == 0]
+    if not allow_ultra:
+        pokemon = pokemon[pokemon["is_ultra"] == 0]
 
     return pokemon
 
@@ -229,6 +234,7 @@ def main(argv):
         "final",
         "legendary",
         "mythical",
+        "ultra",
         "utypes",
         "uteam",
         "color",
@@ -260,6 +266,7 @@ def main(argv):
         --final             Only allow final evolutions.
         --legendary         Don't allow legendary Pokemon.
         --mytical           Don't allow mythical Pokemon.
+        --ultra             Don't allow ultra beast Pokemon.
         --utypes            Enables unique type generation (only for NAIVE).
         --uteam             Enables unique team generation (only for NAIVE/RANDOM).
         --color             Enables colored output."""
@@ -287,6 +294,7 @@ def main(argv):
     only_final = False
     allow_legendary = True
     allow_mythical = True
+    allow_ultra = True
     gen_type = GeneratorType.NAIVE
     weight = 0.5
     gens = 10
@@ -342,6 +350,8 @@ def main(argv):
             allow_legendary = False
         elif opt == "--mythical":
             allow_mythical = False
+        elif opt == "--ultra":
+            allow_ultra = False
         elif opt == "--utypes":
             utypes = True
         elif opt == "--uteam":
@@ -379,6 +389,7 @@ def main(argv):
         only_final=only_final,
         allow_legendary=allow_legendary,
         allow_mythical=allow_mythical,
+        allow_ultra=allow_ultra,
     )
 
     generator = None

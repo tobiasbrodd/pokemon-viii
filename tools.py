@@ -2,8 +2,8 @@ from pokemon import Pokemon, Type, Stats
 import pandas as pd
 import numpy as np
 
-STAT_COLS = range(8, 14)
-WEAK_COLS = range(14, 32)
+STAT_COLS = range(9, 15)
+WEAK_COLS = range(15, 33)
 MAX_STAT = 720
 MIN_STAT = 100
 MAX_WEAK = 26
