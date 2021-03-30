@@ -259,7 +259,7 @@ def main(argv):
         --total t           Sets minimum total to 't'. Default: '0'.
         --weights w         Sets weights to 'w'. Default: '1,1,1,1,1,1'.
         --types t           Sets types to 't. Default: 'All'.
-        --stage s           Sets stage to 'ws'. Default: 'None'.
+        --stage s           Sets stage to 's'. Default: 'None'.
         --gen g             Sets team generator to 'g'. Default: 'NAIVE'.
         --weight w          Sets weight to 'w'. Default: '0.5'.
         --gens g            Sets genetic generations to 'g'. Default: '10'.
@@ -271,7 +271,7 @@ def main(argv):
         --legendary         Don't allow legendary Pokemon.
         --mytical           Don't allow mythical Pokemon.
         --ultra             Don't allow ultra beast Pokemon.
-        --utypes            Enables unique type generation (only for NAIVE).
+        --utypes            Enables unique type generation (only for NAIVE/RANDOM).
         --uteam             Enables unique team generation (only for NAIVE/RANDOM).
         --color             Enables colored output."""
 
@@ -402,7 +402,7 @@ def main(argv):
     generator = None
     if gen_type == GeneratorType.RANDOM:
         generator = RandomGenerator(
-            pokemon, team_no=team_no, size=size, uteam=uteam, seed=seed
+            pokemon, team_no=team_no, size=size, utypes=utypes, uteam=uteam, seed=seed
         )
     elif gen_type == GeneratorType.GENETIC:
         generator = GeneticGenerator(
