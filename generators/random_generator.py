@@ -5,7 +5,9 @@ import tools
 
 
 class RandomGenerator(Generator):
-    def __init__(self, pokemon, team_no=[], size=6, utypes=False, uteam=False, seed=None):
+    def __init__(
+        self, pokemon, team_no=[], size=6, utypes=False, uteam=False, seed=None
+    ):
         self.pokemon = pokemon
         self.team_no = team_no
         self.size = size
@@ -40,7 +42,7 @@ class RandomGenerator(Generator):
         return self.team
 
     def _get_unique_types(self):
-        all_types = self.pokemon[["type_1","type_2"]]
+        all_types = self.pokemon[["type_1", "type_2"]]
         unique_types = all_types.drop_duplicates().reset_index()
 
         return unique_types
@@ -51,6 +53,7 @@ class RandomGenerator(Generator):
         rdx = self.rng.choice(n, self.size - len(self.team), replace=False)
         team_types = unique_types.iloc[rdx, :]
         fltr = np.logical_and(
-            self.pokemon["type_1"].isin(unique_types["type_1"]), self.pokemon["type_2"].isin(unique_types["type_2"])
+            self.pokemon["type_1"].isin(unique_types["type_1"]),
+            self.pokemon["type_2"].isin(unique_types["type_2"]),
         )
         self.pokemon = self.pokemon.loc[fltr]
