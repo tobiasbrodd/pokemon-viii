@@ -17,7 +17,7 @@ class GeneticGenerator(Generator):
         teams=100,
         cross=2,
         mut=3,
-        seed=123,
+        seed=None,
     ):
         self.pokemon = pokemon
         self.team_no = team_no

@@ -5,10 +5,10 @@ import tools
 
 
 class RandomGenerator(Generator):
-    def __init__(self, pokemon, team_no=[], size=6, uteam=False, seed=123):
+    def __init__(self, pokemon, team_no=[], size=6, uteam=False, seed=None):
         self.pokemon = pokemon
         self.team_no = team_no
-        self.size = sizes
+        self.size = size
         self.uteam = uteam
         self.team = []
         self.rng = default_rng(seed)
@@ -23,7 +23,6 @@ class RandomGenerator(Generator):
             self.team.append(tools.frame_to_pokemon(pkmn))
 
         n = self.pokemon.shape[0]
-        rdx = []
         replace = not self.uteam
         rdx = self.rng.choice(n, self.size - len(self.team), replace=replace)
         pkmns = self.pokemon.iloc[rdx, :]
