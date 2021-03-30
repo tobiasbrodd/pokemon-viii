@@ -15,6 +15,7 @@ Generates a Pokemon team and prints the team as ASCII images.
 
 options:  
 **-h, --help:**         Prints help message.  
+**--seed s:**           Sets random seed to 's'. Default: 'None'.  
 **--dex d:**            Sets dex to 'd'. Default: 'ALL'.  
 **--size s:**           Sets size of the team to 's'. Default: '6'.  
 **--team t:**           Sets team to 't'. Default: 'Empty'.
@@ -38,7 +39,8 @@ options:
 **--final:**            Only allow final evolutions.  
 **--legendary:**        Don't allow legendary Pokemon.  
 **--mytical:**          Don't allow mythical Pokemon.  
-**--utypes:**           Enables unique type generation (only for NAIVE).  
+**--ultra:**            Don't allow ultra beast Pokemon.  
+**--utypes:**           Enables unique type generation (only for NAIVE/RANDOM)).  
 **--uteam:**            Enables unique team generation (only for NAIVE/RANDOM).  
 **--color:**            Enables colored output.  
 
