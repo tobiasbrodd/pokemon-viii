@@ -20,6 +20,7 @@ def load(dex=Dex.ALL):
         crown_dex = load_dex(dex=Dex.CROWN)
         other_dex = load_dex(dex=Dex.OTHER)
         dex = pd.concat([galar_dex, armor_dex, crown_dex, other_dex])
+        dex = dex[~dex.index.duplicated(keep="first")]
         return dex.drop_duplicates()
     else:
         return load_dex(dex=dex)
@@ -244,7 +245,7 @@ def main(argv):
     help_message = """usage: run.py [options]
     options:
         -h, --help          Prints help message.
-        --seed s            Sets random seed to 's'. Default: '123'.
+        --seed s            Sets random seed to 's'. Default: 'None'.
         --dex d             Sets dex to 'd'. Default: 'ALL'.
         --size s            Sets size of the team to 's'. Default: '6'.
         --team t            Sets team to 't'. Default: 'Empty'.
@@ -280,7 +281,7 @@ def main(argv):
         print(help_message)
         return
 
-    seed = 123
+    seed = None
     dex = Dex.ALL
     size = 6
     team_no = []
