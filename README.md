@@ -18,14 +18,14 @@ options:
 **--seed s:**           Sets random seed to 's'. Default: 'None'.  
 **--dex d:**            Sets dex to 'd'. Default: 'ALL'.  
 **--size s:**           Sets size of the team to 's'. Default: '6'.  
-**--team t:**           Sets team to 't'. Default: 'Empty'.
+**--team t:**           Sets team to 't'. Default: 'Empty'.  
 **--hp h:**             Sets minimum HP to 'h'. Default: '0'.  
 **--attack a:**         Sets minimum attack to 'a'. Default: '0'.  
 **--defense d:**        Sets minimum defense to 'd'. Default: '0'.  
 **--spattack s:**       Sets minimum sp. attack to 's'. Default: '0'.  
 **--spdefense s:**      Sets minimum sp. defense to 's'. Default: '0'.  
 **--speed s:**          Sets minimum speed to 's'. Default: '0'.  
-**--total t:**          Sets minimum total to 't'. Default: '0'.
+**--total t:**          Sets minimum total to 't'. Default: '0'.  
 **--weights w:**        Sets weights to 'w'. Default: '1,1,1,1,1,1'.  
 **--types t:**          Sets types to 't. Default: 'All'.  
 **--stage s:**          Sets stage to 'ws'. Default: 'None'.  
@@ -40,13 +40,13 @@ options:
 **--legendary:**        Don't allow legendary Pokemon.  
 **--mytical:**          Don't allow mythical Pokemon.  
 **--ultra:**            Don't allow ultra beast Pokemon.  
-**--utypes:**           Enables unique type generation (only for NAIVE/RANDOM)).  
+**--utypes:**           Enables unique type generation (only for NAIVE/RANDOM).  
 **--uteam:**            Enables unique team generation (only for NAIVE/RANDOM).  
 **--color:**            Enables colored output.  
 
 ## Download
 
-Scrapes Galarian Pokedex Pokemon from Serebii.
+Scrapes Galarian pokedex Pokemon from Serebii.
 
 ```shell
 > python3 download.py [options]
@@ -58,7 +58,7 @@ options:
 
 ## Images
 
-Scrapes Galarian Pokedex images from Serebii.
+Scrapes Galarian pokedex images from Serebii.
 
 ```shell
 > python3 images.py [options]
