@@ -1,6 +1,5 @@
 from getopt import getopt, GetoptError
-from scraper import PokemonScraper, Dex
-from pokemon import Pokemon
+from scraper import PokemonScraper, Dex, Game
 import pandas as pd
 import tools
 import sys
@@ -42,18 +41,18 @@ HEADER = [
 ]
 
 
-def save(pokemon, dex=Dex.GALAR):
-    file_name = f"data/pokemon_{dex.value}.csv"
+def save(pokemon, game=Game.SWSH, dex=Dex.GALAR):
+    file_name = f"pokemon/{game.value}/{dex.value}.csv"
     with open(file_name, "w") as f:
         f.write(",".join(HEADER) + "\n")
         for p in pokemon:
             f.write(str(p) + "\n")
 
 
-def load(dex=Dex.GALAR):
+def load(game=Game.SWSH, dex=Dex.GALAR):
     pokemon = []
     lines = []
-    file_name = f"data/pokemon_{dex.value}.csv"
+    file_name = f"pokemon/{game.value}/{dex.value}.csv"
     with open(file_name, "r") as f:
         lines = f.readlines()
     header = lines[0].replace("\n", "").split(",")
@@ -69,11 +68,13 @@ def load(dex=Dex.GALAR):
 
 def main(argv):
     short_options = "h"
-    long_options = ["help", "dex="]
+    long_options = ["help", "game=", "dex=", "workers="]
     help_message = """usage: download.py [options]
     options:
         -h, --help          Prints help message.
-        --dex d             Downloads dex 'd'. Default: 'GALAR'."""
+        --game g            Downloads game 'g'. Default: 'SWSH'.
+        --dex d             Downloads dex 'd'. Default: 'GALAR'.
+        --workers w         Uses 'w' workers. Default: None (cpu_count)."""
 
     try:
         opts, args = getopt(argv, shortopts=short_options, longopts=long_options)
@@ -81,18 +82,24 @@ def main(argv):
         print(help_message)
         return
 
+    game = Game.SWSH
     dex = Dex.GALAR
+    workers = None
 
     for opt, arg in opts:
         if opt in ["-h", "--help"]:
             print(help_message)
             return
+        elif opt == "--game":
+            game = Game[arg.upper()]
         elif opt == "--dex":
             dex = Dex[arg.upper()]
+        elif opt == "--workers":
+            workers = int(arg)
 
     scraper = PokemonScraper()
-    urls = scraper.get_urls(dex=dex)
-    pokemon, failed = scraper.get_pokemon(urls)
+    urls = scraper.get_urls(game=game, dex=dex)
+    pokemon, failed = scraper.get_pokemon(urls, workers=workers)
 
     if len(failed) > 0:
         print("Failed:")
@@ -103,7 +110,7 @@ def main(argv):
         print([p.name for p in pokemon])
 
     # pokemon = load(dex=dex)
-    save(pokemon, dex=dex)
+    save(pokemon, game=game, dex=dex)
 
 
 if __name__ == "__main__":

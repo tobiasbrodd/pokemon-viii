@@ -1,10 +1,10 @@
-# pokemon-swsh
+# pokemon-viii
 
-A Pokemon Sword &amp; Shield Team Generator
+A Pokémon (Gen VIII) Team Generator
 
 ## Team
 
-Generates a Pokemon team and prints the team as ASCII images.
+Generates a Pokémon team and prints the team as ASCII images.
 
 ![Team in greyscale](https://github.com/tobiasbrodd/pokemon-swsh/blob/master/examples/team_grey.png)
 ![Team in color](https://github.com/tobiasbrodd/pokemon-swsh/blob/master/examples/team_color.png)
@@ -16,6 +16,7 @@ Generates a Pokemon team and prints the team as ASCII images.
 options:  
 **-h, --help:**         Prints help message.  
 **--seed s:**           Sets random seed to 's'. Default: 'None'.  
+**--game g:**           Sets game to 'g'. Default: 'SWSH'.  
 **--dex d:**            Sets dex to 'd'. Default: 'ALL'.  
 **--size s:**           Sets size of the team to 's'. Default: '6'.  
 **--team t:**           Sets team to 't'. Default: 'Empty'.  
@@ -46,7 +47,7 @@ options:
 
 ## Download
 
-Scrapes Galarian pokedex Pokemon from Serebii.
+Scrapes Gen VIII Pokédex Pokémon from Serebii.
 
 ```shell
 > python3 download.py [options]
@@ -54,11 +55,12 @@ Scrapes Galarian pokedex Pokemon from Serebii.
 
 options:  
 **-h, --help:**         Prints help message.  
+**--game g:**           Sets game to 'g'. Default: 'SWSH'.  
 **--dex d:**            Sets dex to 'd'. Default: 'GALAR'.  
 
 ## Images
 
-Scrapes Galarian pokedex images from Serebii.
+Scrapes Gen VIII Pokédex images from Serebii.
 
 ```shell
 > python3 images.py [options]
@@ -66,6 +68,7 @@ Scrapes Galarian pokedex images from Serebii.
 
 options:  
 **-h, --help:**         Prints help message.  
+**--game g:**           Sets game to 'g'. Default: 'SWSH'.  
 **--dex d:**            Sets dex to 'd'. Default: 'GALAR'.  
 
 ## Generators

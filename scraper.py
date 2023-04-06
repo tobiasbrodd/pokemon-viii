@@ -9,45 +9,56 @@ import time
 import re
 
 
+class Game(Enum):
+    SWSH = "swsh"
+    BDSP = "bdsp"
+
+
 class Dex(Enum):
     GALAR = "galar"
     ARMOR = "armor"
     CROWN = "crown"
     OTHER = "other"
+    SINNOH = "sinnoh"
     ALL = "all"
+
+
+DEX_URLS = {
+    "swsh": {
+        "galar": "/swordshield/galarpokedex.shtml",
+        "armor": "/swordshield/isleofarmordex.shtml",
+        "crown": "/swordshield/thecrowntundradex.shtml",
+        "other": "/swordshield/pokemonnotindex.shtml",
+    },
+    "bdsp": {
+        "sinnoh": "/brilliantdiamondshiningpearl/sinnohpokedex.shtml",
+        "other": "/brilliantdiamondshiningpearl/otherpokemon.shtml",
+    },
+}
+
+IMAGE_URLS = {
+    "swsh": "/swordshield/pokemon",
+    "bdsp": "/brilliantdiamondshiningpearl/pokemon",
+}
 
 
 class PokemonScraper:
     def __init__(self):
         self.base_url = "https://www.serebii.net"
-        self.galar_dex_url = self.base_url + "/swordshield/galarpokedex.shtml"
-        self.armor_dex_url = self.base_url + "/swordshield/isleofarmordex.shtml"
-        self.crown_dex_url = self.base_url + "/swordshield/thecrowntundradex.shtml"
-        self.other_dex_url = self.base_url + "/swordshield/pokemonnotindex.shtml"
 
-    def get_urls(self, dex=Dex.GALAR):
-        urls = []
-        if dex == Dex.GALAR:
-            dex_url = self.galar_dex_url
-        elif dex == Dex.ARMOR:
-            dex_url = self.armor_dex_url
-        elif dex == Dex.CROWN:
-            dex_url = self.crown_dex_url
-        else:
-            dex_url = self.other_dex_url
-
+    def get_urls(self, game=Game.SWSH, dex=Dex.GALAR):
+        dex_url = DEX_URLS[game.value][dex.value]
+        dex_url = self.base_url + dex_url
         response = requests.get(dex_url)
 
         soup = BeautifulSoup(response.text, "html.parser")
         table = soup.find_all("table", limit=2)[1]
         links = table.select("td:nth-child(3) > a")
-
-        for a in links:
-            urls.append(self.base_url + a["href"])
+        urls = [a["href"] for a in links]
 
         return urls
 
-    def get_pokemon(self, urls):
+    def get_pokemon(self, urls, workers=None):
         manager = Manager()
         progress = manager.dict()
         failed = manager.dict()
@@ -56,7 +67,7 @@ class PokemonScraper:
         job = Process(target=self.print_progress, args=(progress, jobs))
         job.start()
 
-        workers = cpu_count()
+        workers = cpu_count() if workers is None else workers
         with Pool(workers) as pool:
             part = partial(self._get_pokemon, progress=progress, failed=failed)
             res = pool.map(part, urls)
@@ -68,7 +79,8 @@ class PokemonScraper:
         return pokemon, failed
 
     def _get_pokemon(self, url, progress={}, failed={}):
-        response = requests.get(url)
+        pokemon_url = self.base_url + url
+        response = requests.get(pokemon_url)
 
         soup = BeautifulSoup(response.text, "html.parser")
         tables = soup.select("table.dextable:not(table[align])")
@@ -144,7 +156,7 @@ class PokemonScraper:
         row = row.find_all("tr")[0]
         links = row.select("td.pkmn a")
         stages = {}
-        for (i, a) in enumerate(links):
+        for i, a in enumerate(links):
             link = a["href"]
             if link[-1] == "/":
                 link = link[0:-1]
@@ -192,7 +204,7 @@ class PokemonScraper:
         empty_len = 0
         while len(done) < jobs:
             empty_str = " " * empty_len
-            for (key, prog) in progress.items():
+            for key, prog in progress.items():
                 if prog >= 100 and (key not in done):
                     done.append(key)
             print_str = f"Progress: {len(done):.0f}/{jobs:.0f}"
@@ -209,14 +221,15 @@ class PokemonScraper:
 class ImageScraper:
     def __init__(self):
         self.base_url = "https://www.serebii.net"
-        self.image_url = self.base_url + "/swordshield/pokemon"
 
-    def download_images(self, urls):
+    def download_images(self, urls, game=Game.SWSH):
         failed = {}
         jobs = len(urls)
         empty_len = 0
+        image_url = IMAGE_URLS[game.value]
+        image_url = self.base_url + image_url
 
-        for (job, url) in enumerate(urls):
+        for job, url in enumerate(urls):
             empty_str = " " * empty_len
             print_str = f"Progress: {job:.0f}/{jobs:.0f} - {url}"
             empty_len = len(print_str)
@@ -227,7 +240,9 @@ class ImageScraper:
             while len(url) < 3:
                 url = "0" + url
             try:
-                req.urlretrieve(f"{self.image_url}/{url}.png", f"./images/{url}.png")
+                req.urlretrieve(
+                    f"{image_url}/{url}.png", f"./images/{game.value}/{url}.png"
+                )
             except Exception as error:
                 failed[url] = error
 

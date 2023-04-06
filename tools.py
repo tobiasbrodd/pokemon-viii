@@ -1,5 +1,4 @@
 from pokemon import Pokemon, Type, Stats
-import pandas as pd
 import numpy as np
 
 STAT_COLS = range(9, 15)

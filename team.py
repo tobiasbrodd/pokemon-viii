@@ -3,7 +3,7 @@ from generators.random_generator import RandomGenerator
 from generators.naive_generator import NaiveGenerator
 from generators.generator import GeneratorType
 from pokemon import Type, Stats
-from scraper import Dex
+from scraper import Game, Dex
 from getopt import getopt, GetoptError
 import pandas as pd
 import numpy as np
@@ -13,7 +13,7 @@ import sys
 import os
 
 
-def load(dex=Dex.ALL):
+def load(game=Game.SWSH, dex=Dex.ALL):
     if dex == Dex.ALL:
         galar_dex = load_dex(dex=Dex.GALAR)
         armor_dex = load_dex(dex=Dex.ARMOR)
@@ -23,11 +23,11 @@ def load(dex=Dex.ALL):
         dex = dex[~dex.index.duplicated(keep="first")]
         return dex.drop_duplicates()
     else:
-        return load_dex(dex=dex)
+        return load_dex(game=game, dex=dex)
 
 
-def load_dex(dex):
-    file_name = f"data/pokemon_{dex.value}.csv"
+def load_dex(game, dex):
+    file_name = f"pokemon/{game.value}/{dex.value}.csv"
     pokemon = pd.read_csv(file_name, sep=",")
     pokemon.fillna("", inplace=True)
 
@@ -89,11 +89,11 @@ def filter_pokemon(
     return pokemon
 
 
-def print_team(team, color=False):
+def print_team(game, team, color=False):
     if len(team) <= 0:
         return
 
-    team_images, cols = get_team_images(team, color=color)
+    team_images, cols = get_team_images(game, team, color=color)
 
     images = len(team_images)
     upper_border = "_" * cols * images + "_" * (len(team) + 1)
@@ -158,14 +158,14 @@ def get_combined_team_images(output, team_images):
     return output
 
 
-def get_team_images(team, color=False):
+def get_team_images(game, team, color=False):
     team_images = []
     for pokemon in team:
         no = str(pokemon.no)
         while len(no) < 3:
             no = "0" + no
 
-        path = f"images/{no}.png"
+        path = f"images/{game.value}/{no}.png"
         image = asciify.get_image(path)
         if image is None:
             continue
@@ -189,7 +189,7 @@ def print_team_statistics(pokemon, team, weight):
     sp_attack = np.zeros((len(team),))
     sp_defense = np.zeros((len(team),))
     speed = np.zeros((len(team),))
-    for (i, p) in enumerate(team):
+    for i, p in enumerate(team):
         nos[i] = p.no
         total[i] = p.get_total_stat()
         hp[i] = p.hp
@@ -213,6 +213,7 @@ def main(argv):
     long_options = [
         "help",
         "seed=",
+        "game=",
         "dex=",
         "size=",
         "team=",
@@ -246,6 +247,7 @@ def main(argv):
     options:
         -h, --help          Prints help message.
         --seed s            Sets random seed to 's'. Default: 'None'.
+        --game g            Sets game to 'g'. Default: 'SWSH'.
         --dex d             Sets dex to 'd'. Default: 'ALL'.
         --size s            Sets size of the team to 's'. Default: '6'.
         --team t            Sets team to 't'. Default: 'Empty'.
@@ -282,6 +284,7 @@ def main(argv):
         return
 
     seed = None
+    game = Game.SWSH
     dex = Dex.ALL
     size = 6
     team_no = []
@@ -297,9 +300,9 @@ def main(argv):
     types = None
     stage = None
     only_final = False
-    allow_legendary = True
-    allow_mythical = True
-    allow_ultra = True
+    allow_legendary = False
+    allow_mythical = False
+    allow_ultra = False
     gen_type = GeneratorType.NAIVE
     weight = 0.5
     gens = 10
@@ -317,6 +320,8 @@ def main(argv):
             return
         elif opt == "--seed":
             seed = int(arg)
+        elif opt == "--game":
+            game = Game[arg.upper()]
         elif opt == "--dex":
             dex = Dex[arg.upper()]
         elif opt == "--size":
@@ -354,11 +359,11 @@ def main(argv):
         elif opt == "--final":
             only_final = True
         elif opt == "--legendary":
-            allow_legendary = False
+            allow_legendary = True
         elif opt == "--mythical":
-            allow_mythical = False
+            allow_mythical = True
         elif opt == "--ultra":
-            allow_ultra = False
+            allow_ultra = True
         elif opt == "--utypes":
             utypes = True
         elif opt == "--uteam":
@@ -386,7 +391,7 @@ def main(argv):
         Stats.TOTAL: min_total,
     }
 
-    pokemon = load(dex=dex)
+    pokemon = load(game=game, dex=dex)
     pokemon = filter_pokemon(
         pokemon,
         min_stats,
@@ -430,7 +435,7 @@ def main(argv):
 
     team = generator.generate()
 
-    print_team(team, color=color)
+    print_team(game, team, color=color)
     print("")
     print_team_statistics(pokemon, team, weight)
 
